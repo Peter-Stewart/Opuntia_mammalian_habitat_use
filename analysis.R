@@ -21,13 +21,8 @@ validation_set <- get(load("validation_set.Rdata"))
 setwd("C:/temp/Zooniverse/Final/site_data")
 site_data1 <- read.csv("Fieldseason1_site_data_main.csv", header = TRUE)
 site_data2 <- read.csv("Fieldseason2_site_data_main.csv", header = TRUE)
-#site_data1 <- site_data1 %>% filter(Site_ID %in% sitedays$Site) # Remove the two damaged sites
-
-#opuntia_data <- read.csv("Cameras_opuntia_data_main.csv", header = TRUE)
-#opuntia_data <- opuntia_data %>% filter(Site_ID %in% sitedays$Site) # Remove the two damaged sites
 
 tree_data <- read.csv("Cameras_tree_data_main.csv", header = TRUE)
-#tree_data <- tree_data %>% filter(Site_ID %in% sitedays$Site) # Remove the two damaged sites
 
 df_mu_t <- get(load("grid_square_total.Rdata"))
 
@@ -158,26 +153,17 @@ dmat <- generate_distance_matrix(site_data, rescale = TRUE, rescale_constant = 6
 
 # Prepare data lists for upload to cluster
 key_sp <- c("baboon",
-            "elephant",
             "vervetmonkey",
-            "zebragrevys",
-            "impala",
+            "elephant",
+            "buffalo",
             "dikdik",
-            "giraffe",
-            "hyenaspotted",
-            "leopard",
-            "zebraplains",
+            "impala",
             "kudu",
-            "buffalo")
-
-indexes <- list()
-for(i in 1:length(detmats)){
-  if(names(detmats[i]) %in% key_sp){
-    indexes[i] <- i
-  }else{
-    indexes[i] <- NULL}
-}
-indexes <- do.call(rbind, indexes)
+            "giraffe",
+            "zebragrevys",
+            "zebraplains",
+            "hyenaspotted",
+            "leopard")
 
 sitedays <- sitedays %>% group_by(Site) %>% summarise(Days = sum(Days)) # Group by site to get total days
 
@@ -186,7 +172,7 @@ setwd("C:/temp/Zooniverse/Final/processed/species_detection_jsons")
 # Fine-scale
 for(sp in 1:length(key_sp)){
   # Select data for the species
-  dd <- detmats[indexes[sp,]]
+  dd <- detmats[key_sp[sp]]
   dd <- dd[[1]]
   dd <- as.matrix(dd[,-1])
   dd[is.na(dd)] <- -9999
@@ -229,8 +215,8 @@ for(sp in 1:length(key_sp)){
 # Prepare grid square-level data
 grid_data <- site_data %>% filter(!is.na(volume_total))
 sitedays_grid <- sitedays %>% filter(Site %in% grid_data$Site_ID) #%>% 
-  group_by(Site) %>% 
-  summarise(Days = sum(Days))
+#  group_by(Site) %>% 
+#  summarise(Days = sum(Days))
 
 # Prepare distance matrix and temperature data for subset of sites with grid-square data
 dmat <- generate_distance_matrix(grid_data, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
@@ -240,7 +226,7 @@ temperature_mat <- as.matrix(temperature[,-1])
 
 for(sp in 1:length(key_sp)){
   # Select data for the species
-  dd <- (detmats[indexes[sp,]])
+  dd <- (detmats[key_sp[sp]])
   dd <- as.data.frame(dd[[1]])
   dd <- dd %>% filter(dd$site %in% grid_data$Site_ID)
   dd <- as.matrix(dd[,-1])
