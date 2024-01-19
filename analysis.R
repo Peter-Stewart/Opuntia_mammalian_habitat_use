@@ -270,8 +270,9 @@ for(sp in 1:length(key_sp)){
 # Parameters to load
 pars <- c("lp__", 
           "k_bar",
-          "k_season",
           "beta_opuntia")
+
+key_sp_alphabetical <- key_sp[order(key_sp)]
 
 # Load fine-scale no vegetation pathway
 setwd("F:/JASMIN_outputs/occupancy_post/fine_scale/total_no_veg_path")
@@ -288,8 +289,8 @@ for(i in seq(1, length(file_list), by = 4)){
 }
 post_list_fine1 <- post_list_fine1[lengths(post_list_fine1) != 0]
 diagnostics_list_fine1 <- diagnostics_list_fine1[lengths(diagnostics_list_fine1) != 0]
-names(post_list_fine1) <- key_sp
-names(diagnostics_list_fine1) <- key_sp
+names(post_list_fine1) <- key_sp_alphabetical
+names(diagnostics_list_fine1) <- key_sp_alphabetical
 
 # Load fine-scale with vegetation pathway
 setwd("F:/JASMIN_outputs/occupancy_post/fine_scale/total_veg_path")
@@ -306,8 +307,8 @@ for(i in seq(1, length(file_list), by = 4)){
 }
 post_list_fine2 <- post_list_fine2[lengths(post_list_fine2) != 0]
 diagnostics_list_fine2 <- diagnostics_list_fine2[lengths(diagnostics_list_fine2) != 0]
-names(post_list_fine2) <- key_sp
-names(diagnostics_list_fine2) <- key_sp
+names(post_list_fine2) <- key_sp_alphabetical
+names(diagnostics_list_fine2) <- key_sp_alphabetical
 
 # Load grid square with no vegetation pathway
 setwd("F:/JASMIN_outputs/occupancy_post/grid_square/total_no_veg_path")
@@ -324,8 +325,8 @@ for(i in seq(1, length(file_list), by = 4)){
 }
 post_list_grid1 <- post_list_grid1[lengths(post_list_grid1) != 0]
 diagnostics_list_grid1 <- diagnostics_list_grid1[lengths(diagnostics_list_grid1) != 0]
-names(post_list_grid1) <- key_sp
-names(diagnostics_list_grid1) <- key_sp
+names(post_list_grid1) <- key_sp_alphabetical
+names(diagnostics_list_grid1) <- key_sp_alphabetical
 
 # Load grid square with vegetation pathway
 setwd("F:/JASMIN_outputs/occupancy_post/grid_square/total_veg_path")
@@ -342,8 +343,8 @@ for(i in seq(1, length(file_list), by = 4)){
 }
 post_list_grid2 <- post_list_grid2[lengths(post_list_grid2) != 0]
 diagnostics_list_grid2 <- diagnostics_list_grid2[lengths(diagnostics_list_grid2) != 0]
-names(post_list_grid2) <- key_sp
-names(diagnostics_list_grid2) <- key_sp
+names(post_list_grid2) <- key_sp_alphabetical
+names(diagnostics_list_grid2) <- key_sp_alphabetical
 
 
 # Marginal effect plots ####
