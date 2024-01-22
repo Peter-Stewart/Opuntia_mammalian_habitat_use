@@ -346,10 +346,16 @@ diagnostics_list_grid2 <- diagnostics_list_grid2[lengths(diagnostics_list_grid2)
 names(post_list_grid2) <- key_sp_alphabetical
 names(diagnostics_list_grid2) <- key_sp_alphabetical
 
+# Reload saved post_lists
+# setwd("C:/temp/Zooniverse/Final/processed/models_post")
+post_list_fine1 <- get(load("post_list_fine1.Rdata"))
+post_list_fine2 <- get(load("post_list_fine2.Rdata"))
+post_list_grid1 <- get(load("post_list_grid1.Rdata"))
+post_list_grid2 <- get(load("post_list_grid2.Rdata"))
 
 # Marginal effect plots ####
 # Load good plot settings
-pr <- get(load("C:/Users/PeteS/OneDrive/Durham/Occupancy chapter/good_plot_par.Rdata")) # Good settings for 8-panel plots
+pr <- get(load("C:/temp/Zooniverse/Final/scripts/good_plot_par.Rdata")) # Good settings for 8-panel plots
 
 # Figure letters
 plot_titles <- c("A)", "B)", "C)", "D)", 
@@ -380,8 +386,8 @@ for(i in 1:length(key_sp)){
   p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
   
   for(x in 1:length(xseq)){
-    p_season1[,x] <- inv_logit(s$k_bar + s$`k_season[1]` + s$`beta_opuntia[1]`*xseq[x])
-    p_season2[,x] <- inv_logit(s$k_bar + s$`k_season[2]` + s$`beta_opuntia[2]`*xseq[x])
+    p_season1[,x] <- inv_logit(s$`k_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season2[,x] <- inv_logit(s$`k_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
   }
   
   mu1 <- apply(p_season1, 2, median)
@@ -450,8 +456,8 @@ for(i in 1:length(key_sp)){
   p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
   
   for(x in 1:length(xseq)){
-    p_season1[,x] <- inv_logit(s$k_bar + s$`k_season[1]` + s$`beta_opuntia[1]`*xseq[x])
-    p_season2[,x] <- inv_logit(s$k_bar + s$`k_season[2]` + s$`beta_opuntia[2]`*xseq[x])
+    p_season1[,x] <- inv_logit(s$`k_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season2[,x] <- inv_logit(s$`k_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
   }
   
   mu1 <- apply(p_season1, 2, median)
@@ -520,8 +526,8 @@ for(i in 1:length(key_sp)){
   p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
   
   for(x in 1:length(xseq)){
-    p_season1[,x] <- inv_logit(s$k_bar + s$`k_season[1]` + s$`beta_opuntia[1]`*xseq[x])
-    p_season2[,x] <- inv_logit(s$k_bar + s$`k_season[2]` + s$`beta_opuntia[2]`*xseq[x])
+    p_season1[,x] <- inv_logit(s$`k_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season2[,x] <- inv_logit(s$`k_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
   }
   
   mu1 <- apply(p_season1, 2, median)
@@ -590,8 +596,8 @@ for(i in 1:length(key_sp)){
   p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
   
   for(x in 1:length(xseq)){
-    p_season1[,x] <- inv_logit(s$k_bar + s$`k_season[1]` + s$`beta_opuntia[1]`*xseq[x])
-    p_season2[,x] <- inv_logit(s$k_bar + s$`k_season[2]` + s$`beta_opuntia[2]`*xseq[x])
+    p_season1[,x] <- inv_logit(s$`k_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season2[,x] <- inv_logit(s$`k_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
   }
   
   mu1 <- apply(p_season1, 2, median)
