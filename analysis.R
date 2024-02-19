@@ -416,19 +416,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
-  shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -461,7 +461,7 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
   PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
   PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
@@ -486,19 +486,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
-  shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -556,19 +556,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
-  shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -601,21 +601,21 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
+  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
   PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
   
   mu2 <- apply(p_season2, 2, median)
-  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
+  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
   
   # Make the plots
@@ -626,19 +626,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
-  shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -650,11 +650,43 @@ for(i in 1:length(key_sp)){
 dev.off() # Close graphics device
 
 
+# Activity analysis part 1 - total activity (number of detections per day) 
+check <- consensus_classifications %>% filter(species == key_sp[1])
+check2 <- as.data.frame(table(check$site))
+colnames(check2) <- c("Site","n_obs")
+check2$Site <- gsub("Site_","",check2$Site)
+check3 <- merge(sitedays, check2, by = "Site", all.x = TRUE)
+check3$n_obs[is.na(check3$n_obs)] <- 0
+check3$n_obs_daily <- check3$n_obs / check3$Days
+hist(check3$n_obs_daily, breaks = 100)
 
+# Activity analysis part 2 - timing of activity
+check <- consensus_classifications %>% filter(species == key_sp[12])
 
+library(suncalc)
+sunrise <- getSunlightTimes(date = date(check$DateTimeLub),
+                            lat = 0.293061,
+                            lon = 36.899246,
+                            keep = "sunrise",
+                            tz = "Africa/Nairobi")
 
+solar_noon <- getSunlightTimes(date = date(check$DateTimeLub),
+                               lat = 0.293061,
+                               lon = 36.899246,
+                               keep = "solarNoon",
+                               tz = "Africa/Nairobi")
 
+# Force sunrise time to UTC as camera trap datetimes are (incorrectly) stored as UTC
+sunrise$sunrise <- force_tz(sunrise$sunrise, "UTC") 
+solar_noon$solarNoon <- force_tz(solar_noon$solarNoon, "UTC")
 
+check$Time_to_sunrise <- check$DateTimeLub - sunrise$sunrise
+check$Time_to_sunrise <- abs(as.numeric(check$Time_to_sunrise))
+
+check$Time_to_noon <- check$DateTimeLub - solar_noon$solarNoon
+check$Time_to_noon <- abs(as.numeric(check$Time_to_noon))
+
+##
 
 
 
