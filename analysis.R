@@ -661,33 +661,44 @@ check3$n_obs_daily <- check3$n_obs / check3$Days
 hist(check3$n_obs_daily, breaks = 100)
 
 # Activity analysis part 2 - timing of activity
-check <- consensus_classifications %>% filter(species == key_sp[12])
+check <- consensus_classifications %>% filter(species == key_sp[3])
 
 library(suncalc)
-sunrise <- getSunlightTimes(date = date(check$DateTimeLub),
-                            lat = 0.293061,
-                            lon = 36.899246,
-                            keep = "sunrise",
-                            tz = "Africa/Nairobi")
-
 solar_noon <- getSunlightTimes(date = date(check$DateTimeLub),
                                lat = 0.293061,
                                lon = 36.899246,
                                keep = "solarNoon",
                                tz = "Africa/Nairobi")
 
-# Force sunrise time to UTC as camera trap datetimes are (incorrectly) stored as UTC
-sunrise$sunrise <- force_tz(sunrise$sunrise, "UTC") 
+# Force solar noon time to UTC as camera trap datetimes are (incorrectly) stored as UTC
 solar_noon$solarNoon <- force_tz(solar_noon$solarNoon, "UTC")
-
-check$Time_to_sunrise <- check$DateTimeLub - sunrise$sunrise
-check$Time_to_sunrise <- abs(as.numeric(check$Time_to_sunrise))
 
 check$Time_to_noon <- check$DateTimeLub - solar_noon$solarNoon
 check$Time_to_noon <- abs(as.numeric(check$Time_to_noon))
 
-##
+# If Time_to_noon > 43200 then it is measuring to the wrong day - correct this
+for(i in 1:nrow(check)){
+  # If time to noon is equal to or less than 12hr (43200s) then it is correct
+  if(check$Time_to_noon[i] <= 43200){
+    next
+  }else{
+    # Otherwise, need to use solar noon time from previous day
+    solar_noon_previous_day <- getSunlightTimes(date = date(check$DateTimeLub[i] - 1),
+                                                lat = 0.293061,
+                                                lon = 36.899246,
+                                                keep = "solarNoon",
+                                                tz = "Africa/Nairobi")
+    solar_noon_previous_day$solarNoon <- force_tz(solar_noon_previous_day$solarNoon, "UTC")
+    Time_to_noon_previous_day <- check$DateTimeLub[i] - solar_noon_previous_day$solarNoon
+    Time_to_noon_previous_day <- abs(as.numeric(Time_to_noon_previous_day))
+    
+    check$Time_to_noon[i] <- Time_to_noon_previous_day
+  }
+}
 
+
+# Express Time_to_noon as proportion of maximum possible value (43200)
+check$Time_to_noon_sd <- check$Time_to_noon / 43200
 
 
 
