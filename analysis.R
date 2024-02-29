@@ -696,11 +696,12 @@ for(i in 1:nrow(check)){
   }
 }
 
+# Express Time_to_noon in hours
+check$Time_to_noon_hr <- check$Time_to_noon / 3600
 
-# Express Time_to_noon as proportion of maximum possible value (43200)
-check$Time_to_noon_sd <- check$Time_to_noon / 43200
+# Bind to site/grid covariates 
 
-
+# Save as JSON for Stan
 
 
 
