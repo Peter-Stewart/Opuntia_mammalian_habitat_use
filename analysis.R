@@ -654,110 +654,111 @@ dev.off() # Close graphics device
 
 
 # Activity analysis part 1 - timing of activity ####
-
-# Subset to focal key species
-dat <- consensus_classifications %>% filter(species == key_sp[3])
-
-# Obtain solar noon times for each observation
-solar_noon <- getSunlightTimes(date = date(dat$DateTimeLub),
-                               lat = 0.293061,
-                               lon = 36.899246,
-                               keep = "solarNoon",
-                               tz = "Africa/Nairobi")
-
-# Force solar noon time to UTC as camera trap datetimes are (incorrectly) stored as UTC
-solar_noon$solarNoon <- force_tz(solar_noon$solarNoon, "UTC")
-
-# Calculate time to solar noon
-dat$Time_to_noon <- dat$DateTimeLub - solar_noon$solarNoon
-dat$Time_to_noon <- abs(as.numeric(dat$Time_to_noon))
-
-# If Time_to_noon > 43200 then it is measuring to the wrong day - correct this
-for(i in 1:nrow(dat)){
-  # If time to noon is equal to or less than 12hr (43200s) then it is correct
-  if(dat$Time_to_noon[i] <= 43200){
-    next
-  }else{
-    # Otherwise, need to use solar noon time from previous day
-    solar_noon_previous_day <- getSunlightTimes(date = date(dat$DateTimeLub[i] - 1),
-                                                lat = 0.293061,
-                                                lon = 36.899246,
-                                                keep = "solarNoon",
-                                                tz = "Africa/Nairobi")
-    solar_noon_previous_day$solarNoon <- force_tz(solar_noon_previous_day$solarNoon, "UTC")
-    Time_to_noon_previous_day <- dat$DateTimeLub[i] - solar_noon_previous_day$solarNoon
-    Time_to_noon_previous_day <- abs(as.numeric(Time_to_noon_previous_day))
-    
-    dat$Time_to_noon[i] <- Time_to_noon_previous_day
+setwd("C:/temp/Zooniverse/Final/processed/species_detection_jsons")
+for(sp in 1:length(key_sp)){
+  # Subset to focal key species
+  dat <- consensus_classifications %>% filter(species == key_sp[sp])
+  
+  # Obtain solar noon times for each observation
+  solar_noon <- getSunlightTimes(date = date(dat$DateTimeLub),
+                                 lat = 0.293061,
+                                 lon = 36.899246,
+                                 keep = "solarNoon",
+                                 tz = "Africa/Nairobi")
+  
+  # Force solar noon time to UTC as camera trap datetimes are (incorrectly) stored as UTC
+  solar_noon$solarNoon <- force_tz(solar_noon$solarNoon, "UTC")
+  
+  # Calculate time to solar noon
+  dat$Time_to_noon <- dat$DateTimeLub - solar_noon$solarNoon
+  dat$Time_to_noon <- abs(as.numeric(dat$Time_to_noon))
+  
+  # If Time_to_noon > 43200 then it is measuring to the wrong day - correct this
+  for(i in 1:nrow(dat)){
+    # If time to noon is equal to or less than 12hr (43200s) then it is correct
+    if(dat$Time_to_noon[i] <= 43200){
+      next
+    }else{
+      # Otherwise, need to use solar noon time from previous day
+      solar_noon_previous_day <- getSunlightTimes(date = date(dat$DateTimeLub[i] - 1),
+                                                  lat = 0.293061,
+                                                  lon = 36.899246,
+                                                  keep = "solarNoon",
+                                                  tz = "Africa/Nairobi")
+      solar_noon_previous_day$solarNoon <- force_tz(solar_noon_previous_day$solarNoon, "UTC")
+      Time_to_noon_previous_day <- dat$DateTimeLub[i] - solar_noon_previous_day$solarNoon
+      Time_to_noon_previous_day <- abs(as.numeric(Time_to_noon_previous_day))
+      
+      dat$Time_to_noon[i] <- Time_to_noon_previous_day
+    }
   }
+  
+  # Express Time_to_noon on 0-1 scale
+  dat$Time_to_noon_sd <- dat$Time_to_noon / 43200
+  
+  # If standardised time to noon is exactly zero/one, add/subtract one second
+  dat$Time_to_noon_sd <- ifelse(dat$Time_to_noon_sd == 0, dat$Time_to_noon_sd + (1/43200), dat$Time_to_noon_sd)
+  dat$Time_to_noon_sd <- ifelse(dat$Time_to_noon_sd == 1, dat$Time_to_noon_sd - (1/43200), dat$Time_to_noon_sd)
+  
+  # Bind to site/grid covariates 
+  dat$site <- as.integer(gsub("Site_", "", dat$site))
+  
+  dat <- merge(dat, site_data, by.x = "site", by.y = "Site_ID", all.x = TRUE)
+  
+  
+  # Site data dlist
+  dlist <- list(
+    # Observation, site and grid indexes
+    n_obs = as.integer(nrow(dat)),
+    sites = as.integer(length(unique(dat$site))),
+    site_id = as.integer(dat$site),
+    grids = length(unique(dat$grid_square)),
+    grid_id = as.integer(dat$grid_square),
+    
+    # Observed data
+    y = dat$Time_to_noon_sd,
+    
+    # Covariates
+    opuntia = standardize(dat$opuntia_total_cover),
+    d_water = standardize(dat$dist_river),
+    d_road = standardize(dat$dist_road),
+    livestock = standardize(dat$livestock_proportion),
+    grass = standardize(dat$grass_total),
+    forb = standardize(dat$forb_total),
+    shrub = standardize(dat$shrub_total),
+    succulent = standardize(dat$succulent_total),
+    tree = standardize(dat$n_trees)
+  )
+  write_stan_json(data = dlist, file = paste0(key_sp[sp],"_activity_dlist_fine_scale.json"))
+  rm(dlist)
+  
+  # Grid square dlist
+  dat <- dat %>% filter(!is.na(volume_total))
+  
+  dlist <- list(
+    # Observation, site and grid indexes
+    n_obs = as.integer(nrow(dat)),
+    sites = as.integer(length(unique(dat$site))),
+    site_id = as.integer(dat$site),
+    grids = length(unique(dat$grid_square)),
+    grid_id = as.integer(dat$grid_square),
+    
+    # Observed data
+    y = dat$Time_to_noon_sd,
+    
+    # Covariates
+    opuntia = standardize(dat$opuntia_total_cover),
+    d_water = standardize(dat$dist_river),
+    d_road = standardize(dat$dist_road),
+    livestock = standardize(dat$livestock_proportion),
+    grass = standardize(dat$grass_total),
+    forb = standardize(dat$forb_total),
+    shrub = standardize(dat$shrub_total),
+    succulent = standardize(dat$succulent_total),
+    tree = standardize(dat$n_trees)
+  )
+  write_stan_json(data = dlist, file = paste0(key_sp[sp],"_activity_dlist_grid_square.json"))
 }
-
-# Express Time_to_noon on 0-1 scale
-dat$Time_to_noon_sd <- dat$Time_to_noon / 43200
-
-# If standardised time to noon is exactly zero/one, add/subtract one second
-dat$Time_to_noon_sd <- ifelse(dat$Time_to_noon_sd == 0, dat$Time_to_noon_sd + (1/43200), dat$Time_to_noon_sd)
-dat$Time_to_noon_sd <- ifelse(dat$Time_to_noon_sd == 1, dat$Time_to_noon_sd - (1/43200), dat$Time_to_noon_sd)
-
-# Bind to site/grid covariates 
-dat$site <- as.integer(gsub("Site_", "", dat$site))
-
-dat <- merge(dat, site_data, by.x = "site", by.y = "Site_ID", all.x = TRUE)
-
-
-
-# Site data dlist
-dlist <- list(
-  # Observation, site and grid indexes
-  n_obs = as.integer(nrow(dat)),
-  sites = as.integer(length(unique(dat$site))),
-  site_id = as.integer(dat$site),
-  grids = length(unique(dat$grid_square)),
-  grid_id = as.integer(dat$grid_square),
-  
-  # Observed data
-  y = dat$Time_to_noon_sd,
-  
-  # Covariates
-  opuntia = standardize(dat$opuntia_total_cover),
-  d_water = standardize(dat$dist_river),
-  d_road = standardize(dat$dist_road),
-  livestock = standardize(dat$livestock_proportion),
-  grass = standardize(dat$grass_total),
-  forb = standardize(dat$forb_total),
-  shrub = standardize(dat$shrub_total),
-  succulent = standardize(dat$succulent_total),
-  tree = standardize(dat$n_trees)
-)
-write_stan_json(data = dlist, file = paste0(key_sp[sp],"_activity_dlist_fine_scale.json"))
-rm(dlist)
-
-# Grid square dlist
-dat <- dat %>% filter(!is.na(volume_total))
-
-dlist <- list(
-  # Observation, site and grid indexes
-  n_obs = as.integer(nrow(dat)),
-  sites = as.integer(length(unique(dat$site))),
-  site_id = as.integer(dat$site),
-  grids = length(unique(dat$grid_square)),
-  grid_id = as.integer(dat$grid_square),
-  
-  # Observed data
-  y = dat$Time_to_noon_sd,
-  
-  # Covariates
-  opuntia = standardize(dat$opuntia_total_cover),
-  d_water = standardize(dat$dist_river),
-  d_road = standardize(dat$dist_road),
-  livestock = standardize(dat$livestock_proportion),
-  grass = standardize(dat$grass_total),
-  forb = standardize(dat$forb_total),
-  shrub = standardize(dat$shrub_total),
-  succulent = standardize(dat$succulent_total),
-  tree = standardize(dat$n_trees)
-)
-write_stan_json(data = dlist, file = paste0(key_sp[sp],"_activity_dlist_grid_square.json"))
 
 
 # Activity analysis part 2 - total activity (number of detections per day) ####
