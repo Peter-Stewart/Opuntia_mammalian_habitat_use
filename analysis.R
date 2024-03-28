@@ -964,7 +964,7 @@ names(results_list) <- key_sp
 
 
 # Binomial day/night analysis ####
-setwd("C:/temp/Zooniverse/Final/processed/day_night_detection_jsons")
+setwd("C:/temp/Zooniverse/Final/processed/day_night_detection_jsons/gp")
 for(sp in 1:length(key_sp)){
   # Subset to focal key species
   dat <- consensus_classifications %>% filter(species == key_sp[sp])
@@ -997,14 +997,14 @@ for(sp in 1:length(key_sp)){
   # Overwrite dat to avoid re-writing dlist code
   dat <- dat_grouped 
   
+  # Generate distance matrix
+  dmat <- generate_distance_matrix(dat, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
+
   # Site data dlist
   dlist <- list(
-    # Observation, site and grid indexes
+    # Observation and season indexes
     n_obs = as.integer(nrow(dat)),
-    sites = as.integer(length(unique(dat$site))),
-    site_id = as.integer(as.factor(dat$site)),
-    grids = length(unique(dat$grid_square)),
-    grid_id = as.integer(droplevels(dat$grid_square)),
+
     season = as.integer(ifelse(dat$site >= 2000, 2, 1)),
     nseasons = 2L,
     
@@ -1021,7 +1021,10 @@ for(sp in 1:length(key_sp)){
     forb = standardize(dat$forb_total),
     shrub = standardize(dat$shrub_total),
     succulent = standardize(dat$succulent_total),
-    tree = standardize(dat$n_trees)
+    tree = standardize(dat$n_trees),
+    
+    # Distance matrix
+    dmat = dmat
   )
   
   # In some cases, all succulent values are 0 so standardize returns NaN
@@ -1033,13 +1036,13 @@ for(sp in 1:length(key_sp)){
   # Grid square dlist
   dat <- dat %>% filter(!is.na(volume_total))
   
+  # Generate distance matrix
+  dmat <- generate_distance_matrix(dat, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
+  
+  
   dlist <- list(
-    # Observation, site and grid indexes
+    # Observation and season indexes
     n_obs = as.integer(nrow(dat)),
-    sites = as.integer(length(unique(dat$site))),
-    site_id = as.integer(as.factor(dat$site)),
-    grids = length(unique(dat$grid_square)),
-    grid_id = as.integer(droplevels(dat$grid_square)),
     season = as.integer(ifelse(dat$site >= 2000, 2, 1)),
     nseasons = 2L,
     
@@ -1056,7 +1059,10 @@ for(sp in 1:length(key_sp)){
     forb = standardize(dat$forb_total),
     shrub = standardize(dat$shrub_total),
     succulent = standardize(dat$succulent_total),
-    tree = standardize(dat$n_trees)
+    tree = standardize(dat$n_trees),
+    
+    # Distance matrix
+    dmat = dmat
   )
   # In some cases, all succulent values are 0 so standardize returns NaN
   dlist$succulent[is.nan(dlist$succulent)] <- 0
@@ -1064,9 +1070,13 @@ for(sp in 1:length(key_sp)){
   write_stan_json(data = dlist, file = paste0(key_sp[sp],"_day_night_detection_dlist_grid_square.json"))
 }
 
+
 # Load output from JASMIN
-setwd("C:/temp/Zooniverse/Final/processed/models_post/day_night_detection")
+setwd("F:/JASMIN_outputs/day_night_detection_gp")
 key_sp_alphabetical <- key_sp[order(key_sp)]
+pars <- c("lp__", 
+          "k_bar",
+          "beta_opuntia")
 
 # Grid square total vegpath
 file_list1 <- list.files(pattern = ".grid_square_total_vegpath.")
@@ -1074,7 +1084,7 @@ day_night_post_list_grid1 <- list()
 day_night_diagnostics_list_grid1 <- list()
 
 for(i in seq(1, length(file_list1), by = 4)){
-  mod <- read_cmdstan_csv(files = file_list1[i:(i+3)])
+  mod <- read_cmdstan_csv(files = file_list1[i:(i+3)], variables = pars)
   post <- as_draws_df(mod$post_warmup_draws)
   diagnostics <- as_draws_df(mod$post_warmup_sampler_diagnostics)
   day_night_post_list_grid1[[i]] <- post
@@ -1168,12 +1178,13 @@ for(i in 1:length(key_sp)){
 dev.off() # Close graphics device
 
 # Grid square total novegpath
+setwd("F:/JASMIN_outputs/day_night_detection_gp")
 file_list2 <- list.files(pattern = ".grid_square_total_novegpath.")
 day_night_post_list_grid2 <- list()
 day_night_diagnostics_list_grid2 <- list()
 
 for(i in seq(1, length(file_list2), by = 4)){
-  mod <- read_cmdstan_csv(files = file_list2[i:(i+3)])
+  mod <- read_cmdstan_csv(files = file_list2[i:(i+3)], variables = pars)
   post <- as_draws_df(mod$post_warmup_draws)
   diagnostics <- as_draws_df(mod$post_warmup_sampler_diagnostics)
   day_night_post_list_grid2[[i]] <- post
@@ -1267,12 +1278,13 @@ for(i in 1:length(key_sp)){
 dev.off() # Close graphics device
 
 # Fine scale total vegpath
+setwd("F:/JASMIN_outputs/day_night_detection_gp")
 file_list1 <- list.files(pattern = ".fine_scale_total_vegpath.")
 day_night_post_list_fine1 <- list()
 day_night_diagnostics_list_fine1 <- list()
 
 for(i in seq(1, length(file_list1), by = 4)){
-  mod <- read_cmdstan_csv(files = file_list1[i:(i+3)])
+  mod <- read_cmdstan_csv(files = file_list1[i:(i+3)], variables = pars)
   post <- as_draws_df(mod$post_warmup_draws)
   diagnostics <- as_draws_df(mod$post_warmup_sampler_diagnostics)
   day_night_post_list_fine1[[i]] <- post
@@ -1301,7 +1313,7 @@ tiff("day_night_fine_scale_total_vegpath.tiff", width = 15.83, height = 12.69, u
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.554, 3.585, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7575, 4.2039, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1366,12 +1378,13 @@ for(i in 1:length(key_sp)){
 dev.off() # Close graphics device
 
 # Fine scale total novegpath
+setwd("F:/JASMIN_outputs/day_night_detection_gp")
 file_list2 <- list.files(pattern = ".fine_scale_total_novegpath.")
 day_night_post_list_fine2 <- list()
 day_night_diagnostics_list_fine2 <- list()
 
 for(i in seq(1, length(file_list2), by = 4)){
-  mod <- read_cmdstan_csv(files = file_list2[i:(i+3)])
+  mod <- read_cmdstan_csv(files = file_list2[i:(i+3)], variables = pars)
   post <- as_draws_df(mod$post_warmup_draws)
   diagnostics <- as_draws_df(mod$post_warmup_sampler_diagnostics)
   day_night_post_list_fine2[[i]] <- post
@@ -1400,7 +1413,7 @@ tiff("day_night_fine_scale_total_novegpath.tiff", width = 15.83, height = 12.69,
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.554, 3.585, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7575, 4.2039, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
