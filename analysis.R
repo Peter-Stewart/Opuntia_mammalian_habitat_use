@@ -151,8 +151,7 @@ site_data <- site_data[order(site_data$Site_ID),]
 # Generate distance matrix
 dmat <- generate_distance_matrix(site_data, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
 
-
-# Prepare data lists for upload to cluster
+# List key species
 key_sp <- c("baboon",
             "vervetmonkey",
             "elephant",
@@ -168,6 +167,8 @@ key_sp <- c("baboon",
 
 sitedays <- sitedays %>% group_by(Site) %>% summarise(Days = sum(Days)) # Group by site to get total days
 
+
+# Occupancy models ####
 # Create dlist for each species and save in Stan JSON format
 setwd("C:/temp/Zooniverse/Final/processed/species_detection_jsons")
 # Fine-scale
@@ -267,7 +268,7 @@ for(sp in 1:length(key_sp)){
   write_stan_json(data = dlist, file = paste0(key_sp[sp],"_dlist_grid_square.json"))
 }
 
-# Load cmdstan output files ####
+# Load cmdstan output files 
 # Parameters to load
 pars <- c("lp__", 
           "k_bar",
@@ -276,8 +277,8 @@ pars <- c("lp__",
 key_sp_alphabetical <- key_sp[order(key_sp)]
 
 # Load fine-scale no vegetation pathway
-setwd("F:/JASMIN_outputs/occupancy_post/fine_scale/total_no_veg_path")
-file_list <- list.files(pattern = ".csv")
+setwd("F:/JASMIN_outputs/occupancy_post")
+file_list <- list.files(pattern = ".fine_scale_total_no_veg_path")
 post_list_fine1 <- list()
 diagnostics_list_fine1 <- list()
 for(i in seq(1, length(file_list), by = 4)){
@@ -294,8 +295,8 @@ names(post_list_fine1) <- key_sp_alphabetical
 names(diagnostics_list_fine1) <- key_sp_alphabetical
 
 # Load fine-scale with vegetation pathway
-setwd("F:/JASMIN_outputs/occupancy_post/fine_scale/total_veg_path")
-file_list <- list.files(pattern = ".csv")
+setwd("F:/JASMIN_outputs/occupancy_post")
+file_list <- list.files(pattern = ".fine_scale_total_veg_path")
 post_list_fine2 <- list()
 diagnostics_list_fine2 <- list()
 for(i in seq(1, length(file_list), by = 4)){
@@ -312,8 +313,8 @@ names(post_list_fine2) <- key_sp_alphabetical
 names(diagnostics_list_fine2) <- key_sp_alphabetical
 
 # Load grid square with no vegetation pathway
-setwd("F:/JASMIN_outputs/occupancy_post/grid_square/total_no_veg_path")
-file_list <- list.files(pattern = ".csv")
+setwd("F:/JASMIN_outputs/occupancy_post")
+file_list <- list.files(pattern = ".grid_square_total_no_veg_path")
 post_list_grid1 <- list()
 diagnostics_list_grid1 <- list()
 for(i in seq(1, length(file_list), by = 4)){
@@ -330,8 +331,8 @@ names(post_list_grid1) <- key_sp_alphabetical
 names(diagnostics_list_grid1) <- key_sp_alphabetical
 
 # Load grid square with vegetation pathway
-setwd("F:/JASMIN_outputs/occupancy_post/grid_square/total_veg_path")
-file_list <- list.files(pattern = ".csv")
+setwd("F:/JASMIN_outputs/occupancy_post")
+file_list <- list.files(pattern = ".grid_square_total_veg_path")
 post_list_grid2 <- list()
 diagnostics_list_grid2 <- list()
 for(i in seq(1, length(file_list), by = 4)){
@@ -349,12 +350,12 @@ names(diagnostics_list_grid2) <- key_sp_alphabetical
 
 # Reload saved post_lists
 # setwd("C:/temp/Zooniverse/Final/processed/models_post")
-post_list_fine1 <- get(load("post_list_fine1.Rdata"))
-post_list_fine2 <- get(load("post_list_fine2.Rdata"))
-post_list_grid1 <- get(load("post_list_grid1.Rdata"))
-post_list_grid2 <- get(load("post_list_grid2.Rdata"))
+#post_list_fine1 <- get(load("post_list_fine1.Rdata"))
+#post_list_fine2 <- get(load("post_list_fine2.Rdata"))
+#post_list_grid1 <- get(load("post_list_grid1.Rdata"))
+#post_list_grid2 <- get(load("post_list_grid2.Rdata"))
 
-# Marginal effect plots ####
+# Marginal effect plots
 # Load good plot settings
 pr <- get(load("C:/temp/Zooniverse/Final/scripts/good_plot_par.Rdata")) # Good settings for 8-panel plots
 
@@ -962,6 +963,509 @@ names(results_list) <- key_sp
 
 
 
+# Total number of detections per site ####
+setwd("C:/temp/Zooniverse/Final/processed/total_activity_jsons")
+for(sp in 1:length(key_sp)){
+  # Subset to focal key species
+  dat <- consensus_classifications %>% filter(species == key_sp[sp])
+  
+  # Indicate observation
+  dat$detections <- 1L
+  
+  # Group by site and calculate total number of obs
+  dat_grouped <- dat %>% group_by(site) %>%
+    summarise(across(c(detections), sum))
+  dat_grouped$site <- as.integer(gsub("Site_", "", dat_grouped$site))
+  
+  # Sites with no detections are missing - add them back in
+  sites_all <- as.data.frame(sitedays$Site)
+  colnames(sites_all) <- "site"
+  dat_grouped <- merge(sites_all, dat_grouped, by = "site", all.x = TRUE)
+  dat_grouped$detections[is.na(dat_grouped$detections)] <- 0
+  
+  # Bind to site/grid covariates 
+  dat_grouped <- merge(dat_grouped, site_data, by.x = "site", by.y = "Site_ID", all.x = TRUE)
+  
+  # Overwrite dat to avoid re-writing dlist code
+  dat <- dat_grouped 
+  
+  # Generate distance matrix
+  dmat <- generate_distance_matrix(dat, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
+  
+  # Site data dlist
+  dlist <- list(
+    # Observation and season indexes
+    n_obs = as.integer(nrow(dat)),
+    
+    season = as.integer(ifelse(dat$site >= 2000, 2, 1)),
+    nseasons = 2L,
+    
+    # Observed data
+    detections = as.integer(dat$detections),
+    
+    # Covariates
+    opuntia = standardize(dat$opuntia_total_cover),
+    d_water = standardize(dat$dist_river),
+    d_road = standardize(dat$dist_road),
+    livestock = standardize(dat$livestock_proportion),
+    grass = standardize(dat$grass_total),
+    forb = standardize(dat$forb_total),
+    shrub = standardize(dat$shrub_total),
+    succulent = standardize(dat$succulent_total),
+    tree = standardize(dat$n_trees),
+    
+    # Distance matrix
+    dmat = dmat
+  )
+  
+  # In some cases, all succulent values are 0 so standardize returns NaN
+  dlist$succulent[is.nan(dlist$succulent)] <- 0
+  
+  write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_fine_scale.json"))
+  rm(dlist)
+  
+  # Grid square dlist
+  dat <- dat %>% filter(!is.na(volume_total))
+  
+  # Generate distance matrix
+  dmat <- generate_distance_matrix(dat, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
+  
+  
+  dlist <- list(
+    # Observation and season indexes
+    n_obs = as.integer(nrow(dat)),
+    season = as.integer(ifelse(dat$site >= 2000, 2, 1)),
+    nseasons = 2L,
+    
+    # Observed data
+    detections = as.integer(dat$detections),
+    
+    # Covariates
+    opuntia = standardize(dat$opuntia_total_cover),
+    d_water = standardize(dat$dist_river),
+    d_road = standardize(dat$dist_road),
+    livestock = standardize(dat$livestock_proportion),
+    grass = standardize(dat$grass_total),
+    forb = standardize(dat$forb_total),
+    shrub = standardize(dat$shrub_total),
+    succulent = standardize(dat$succulent_total),
+    tree = standardize(dat$n_trees),
+    
+    # Distance matrix
+    dmat = dmat
+  )
+  # In some cases, all succulent values are 0 so standardize returns NaN
+  dlist$succulent[is.nan(dlist$succulent)] <- 0
+  
+  write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_grid_square.json"))
+}
+
+# Load output from JASMIN
+setwd("F:/JASMIN_outputs/total_activity_gp")
+key_sp_alphabetical <- key_sp[order(key_sp)]
+pars <- c("lp__", 
+          "alpha_bar",
+          "beta_opuntia")
+
+# Grid square total vegpath
+file_list1 <- list.files(pattern = ".grid_square_total_vegpath.")
+total_activity_post_list_grid1 <- list()
+total_activity_diagnostics_list_grid1 <- list()
+
+for(i in seq(1, length(file_list1), by = 4)){
+  mod <- read_cmdstan_csv(files = file_list1[i:(i+3)], variables = pars)
+  post <- as_draws_df(mod$post_warmup_draws)
+  diagnostics <- as_draws_df(mod$post_warmup_sampler_diagnostics)
+  total_activity_post_list_grid1[[i]] <- post
+  total_activity_diagnostics_list_grid1[[i]] <- diagnostics
+  print(i)
+}
+total_activity_post_list_grid1 <- total_activity_post_list_grid1[lengths(total_activity_post_list_grid1) != 0]
+total_activity_diagnostics_list_grid1 <- total_activity_diagnostics_list_grid1[lengths(total_activity_diagnostics_list_grid1) != 0]
+names(total_activity_post_list_grid1) <- key_sp_alphabetical
+names(total_activity_diagnostics_list_grid1) <- key_sp_alphabetical
+
+# Plot results
+pr <- get(load("C:/temp/Zooniverse/Final/scripts/good_plot_par.Rdata")) # Good settings for 8-panel plots
+
+# Figure letters
+plot_titles <- c("A)", "B)", "C)", "D)", 
+                 "E)", "F)", "G)", "H)",
+                 "I)", "J)", "K)", "L)")
+
+# Colours for shading CI's
+species_colours <- c("#35B779FF","#440154FF")
+colouralpha <- 0.4
+
+setwd("C:/temp/Zooniverse/Final/figures/total_activity_figures")
+tiff("total_activity_grid_square_total_vegpath.tiff", width = 15.83, height = 12.69, units = 'cm', res = 300)
+par(pr)
+par(mfrow=c(3,4))
+
+xseq <- seq(-1.554, 3.585, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+
+# Loop over each species
+for(i in 1:length(key_sp)){
+  s <- total_activity_post_list_grid1[[key_sp[i]]]
+  
+  # Calculate marginal effects
+  p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
+  for(x in 1:length(xseq)){
+    p_season1[,x] <- exp(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season2[,x] <- exp(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+  }
+  
+  mu1 <- apply(p_season1, 2, median)
+  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
+  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
+  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
+  
+  mu2 <- apply(p_season2, 2, median)
+  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
+  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
+  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
+  
+  # Make the plots
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
+       ylab = "P(night)",
+       xlab="Opuntia grid square vol.", 
+       yaxt = "n")
+  title(paste(plot_titles[i]), adj=0, line = 0.7)
+  axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
+  points(x = xseq, y = mu1, type="l", lwd=2)
+  
+  # Optional dashed lines at psi = 0.5 and x = 0
+  #abline(h = 0.5, lty = 2)
+  #abline(v = 0, lty = 2)
+}
+dev.off() # Close graphics device
+
+# Grid square total novegpath
+setwd("F:/JASMIN_outputs/total_activity_gp")
+file_list2 <- list.files(pattern = ".grid_square_total_novegpath.")
+total_activity_post_list_grid2 <- list()
+total_activity_diagnostics_list_grid2 <- list()
+
+for(i in seq(1, length(file_list2), by = 4)){
+  mod <- read_cmdstan_csv(files = file_list2[i:(i+3)], variables = pars)
+  post <- as_draws_df(mod$post_warmup_draws)
+  diagnostics <- as_draws_df(mod$post_warmup_sampler_diagnostics)
+  total_activity_post_list_grid2[[i]] <- post
+  total_activity_diagnostics_list_grid2[[i]] <- diagnostics
+  print(i)
+}
+total_activity_post_list_grid2 <- total_activity_post_list_grid2[lengths(total_activity_post_list_grid2) != 0]
+total_activity_diagnostics_list_grid2 <- total_activity_diagnostics_list_grid2[lengths(total_activity_diagnostics_list_grid2) != 0]
+names(total_activity_post_list_grid2) <- key_sp_alphabetical
+names(total_activity_diagnostics_list_grid2) <- key_sp_alphabetical
+
+# Plot results
+pr <- get(load("C:/temp/Zooniverse/Final/scripts/good_plot_par.Rdata")) # Good settings for 8-panel plots
+
+# Figure letters
+plot_titles <- c("A)", "B)", "C)", "D)", 
+                 "E)", "F)", "G)", "H)",
+                 "I)", "J)", "K)", "L)")
+
+# Colours for shading CI's
+species_colours <- c("#35B779FF","#440154FF")
+colouralpha <- 0.4
+
+setwd("C:/temp/Zooniverse/Final/figures/total_activity_figures")
+tiff("total_activity_grid_square_total_novegpath.tiff", width = 15.83, height = 12.69, units = 'cm', res = 300)
+par(pr)
+par(mfrow=c(3,4))
+
+xseq <- seq(-1.554, 3.585, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+
+# Loop over each species
+for(i in 1:length(key_sp)){
+  s <- total_activity_post_list_grid2[[key_sp[i]]]
+  
+  # Calculate marginal effects
+  p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
+  for(x in 1:length(xseq)){
+    p_season1[,x] <- exp(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season2[,x] <- exp(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+  }
+  
+  mu1 <- apply(p_season1, 2, median)
+  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
+  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
+  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
+  
+  mu2 <- apply(p_season2, 2, median)
+  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
+  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
+  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
+  
+  # Make the plots
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
+       ylab = "P(night)",
+       xlab="Opuntia grid square vol.", 
+       yaxt = "n")
+  title(paste(plot_titles[i]), adj=0, line = 0.7)
+  axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
+  points(x = xseq, y = mu1, type="l", lwd=2)
+  
+  # Optional dashed lines at psi = 0.5 and x = 0
+  #abline(h = 0.5, lty = 2)
+  #abline(v = 0, lty = 2)
+}
+dev.off() # Close graphics device
+
+# Fine scale total vegpath
+setwd("F:/JASMIN_outputs/total_activity_gp")
+file_list1 <- list.files(pattern = ".fine_scale_total_vegpath.")
+total_activity_post_list_fine1 <- list()
+total_activity_diagnostics_list_fine1 <- list()
+
+for(i in seq(1, length(file_list1), by = 4)){
+  mod <- read_cmdstan_csv(files = file_list1[i:(i+3)], variables = pars)
+  post <- as_draws_df(mod$post_warmup_draws)
+  diagnostics <- as_draws_df(mod$post_warmup_sampler_diagnostics)
+  total_activity_post_list_fine1[[i]] <- post
+  total_activity_diagnostics_list_fine1[[i]] <- diagnostics
+  print(i)
+}
+total_activity_post_list_fine1 <- total_activity_post_list_fine1[lengths(total_activity_post_list_fine1) != 0]
+total_activity_diagnostics_list_fine1 <- total_activity_diagnostics_list_fine1[lengths(total_activity_diagnostics_list_fine1) != 0]
+names(total_activity_post_list_fine1) <- key_sp_alphabetical
+names(total_activity_diagnostics_list_fine1) <- key_sp_alphabetical
+
+# Plot results
+pr <- get(load("C:/temp/Zooniverse/Final/scripts/good_plot_par.Rdata")) # Good settings for 8-panel plots
+
+# Figure letters
+plot_titles <- c("A)", "B)", "C)", "D)", 
+                 "E)", "F)", "G)", "H)",
+                 "I)", "J)", "K)", "L)")
+
+# Colours for shading CI's
+species_colours <- c("#35B779FF","#440154FF")
+colouralpha <- 0.4
+
+setwd("C:/temp/Zooniverse/Final/figures/total_activity_figures")
+tiff("total_activity_fine_scale_total_vegpath.tiff", width = 15.83, height = 12.69, units = 'cm', res = 300)
+par(pr)
+par(mfrow=c(3,4))
+
+xseq <- seq(-0.7575, 4.2039, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+
+# Loop over each species
+for(i in 1:length(key_sp)){
+  s <- total_activity_post_list_fine1[[key_sp[i]]]
+  
+  # Calculate marginal effects
+  p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
+  for(x in 1:length(xseq)){
+    p_season1[,x] <- exp(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season2[,x] <- exp(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+  }
+  
+  mu1 <- apply(p_season1, 2, median)
+  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
+  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
+  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
+  
+  mu2 <- apply(p_season2, 2, median)
+  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
+  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
+  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
+  
+  # Make the plots
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
+       ylab = "P(night)",
+       xlab="Opuntia cover", 
+       yaxt = "n")
+  title(paste(plot_titles[i]), adj=0, line = 0.7)
+  axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
+  points(x = xseq, y = mu1, type="l", lwd=2)
+  
+  # Optional dashed lines at psi = 0.5 and x = 0
+  #abline(h = 0.5, lty = 2)
+  #abline(v = 0, lty = 2)
+}
+dev.off() # Close graphics device
+
+# Fine scale total novegpath
+setwd("F:/JASMIN_outputs/total_activity_gp")
+file_list2 <- list.files(pattern = ".fine_scale_total_novegpath.")
+total_activity_post_list_fine2 <- list()
+total_activity_diagnostics_list_fine2 <- list()
+
+for(i in seq(1, length(file_list2), by = 4)){
+  mod <- read_cmdstan_csv(files = file_list2[i:(i+3)], variables = pars)
+  post <- as_draws_df(mod$post_warmup_draws)
+  diagnostics <- as_draws_df(mod$post_warmup_sampler_diagnostics)
+  total_activity_post_list_fine2[[i]] <- post
+  total_activity_diagnostics_list_fine2[[i]] <- diagnostics
+  print(i)
+}
+total_activity_post_list_fine2 <- total_activity_post_list_fine2[lengths(total_activity_post_list_fine2) != 0]
+total_activity_diagnostics_list_fine2 <- total_activity_diagnostics_list_fine2[lengths(total_activity_diagnostics_list_fine2) != 0]
+names(total_activity_post_list_fine2) <- key_sp_alphabetical
+names(total_activity_diagnostics_list_fine2) <- key_sp_alphabetical
+
+# Plot results
+pr <- get(load("C:/temp/Zooniverse/Final/scripts/good_plot_par.Rdata")) # Good settings for 8-panel plots
+
+# Figure letters
+plot_titles <- c("A)", "B)", "C)", "D)", 
+                 "E)", "F)", "G)", "H)",
+                 "I)", "J)", "K)", "L)")
+
+# Colours for shading CI's
+species_colours <- c("#35B779FF","#440154FF")
+colouralpha <- 0.4
+
+setwd("C:/temp/Zooniverse/Final/figures/total_activity_figures")
+tiff("total_activity_fine_scale_total_novegpath.tiff", width = 15.83, height = 12.69, units = 'cm', res = 300)
+par(pr)
+par(mfrow=c(3,4))
+
+xseq <- seq(-0.7575, 4.2039, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+
+# Loop over each species
+for(i in 1:length(key_sp)){
+  s <- total_activity_post_list_fine2[[key_sp[i]]]
+  
+  # Calculate marginal effects
+  p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
+  for(x in 1:length(xseq)){
+    p_season1[,x] <- exp(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season2[,x] <- exp(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+  }
+  
+  mu1 <- apply(p_season1, 2, median)
+  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
+  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
+  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
+  
+  mu2 <- apply(p_season2, 2, median)
+  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
+  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
+  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
+  
+  # Make the plots
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
+       ylab = "P(night)",
+       xlab="Opuntia cover", 
+       yaxt = "n")
+  title(paste(plot_titles[i]), adj=0, line = 0.7)
+  axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
+  points(x = xseq, y = mu1, type="l", lwd=2)
+  
+  # Optional dashed lines at psi = 0.5 and x = 0
+  #abline(h = 0.5, lty = 2)
+  #abline(v = 0, lty = 2)
+}
+dev.off() # Close graphics device
+
 
 # Binomial day/night analysis ####
 setwd("C:/temp/Zooniverse/Final/processed/day_night_detection_jsons/gp")
@@ -1075,7 +1579,7 @@ for(sp in 1:length(key_sp)){
 setwd("F:/JASMIN_outputs/day_night_detection_gp")
 key_sp_alphabetical <- key_sp[order(key_sp)]
 pars <- c("lp__", 
-          "k_bar",
+          "alpha_bar",
           "beta_opuntia")
 
 # Grid square total vegpath
@@ -1148,7 +1652,7 @@ for(i in 1:length(key_sp)){
   
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
-       ylab = expression(psi),
+       ylab = "P(night)",
        xlab="Opuntia grid square vol.", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
@@ -1248,7 +1752,7 @@ for(i in 1:length(key_sp)){
   
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
-       ylab = expression(psi),
+       ylab = "P(night)",
        xlab="Opuntia grid square vol.", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
@@ -1348,8 +1852,8 @@ for(i in 1:length(key_sp)){
   
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
-       ylab = expression(psi),
-       xlab="Opuntia Fine scale vol.", 
+       ylab = "P(night)",
+       xlab="Opuntia cover", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
@@ -1448,8 +1952,8 @@ for(i in 1:length(key_sp)){
   
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
-       ylab = expression(psi),
-       xlab="Opuntia Fine scale vol.", 
+       ylab = "P(night)",
+       xlab="Opuntia cover", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
@@ -1476,3 +1980,36 @@ for(i in 1:length(key_sp)){
   #abline(v = 0, lty = 2)
 }
 dev.off() # Close graphics device
+
+
+
+
+
+
+
+
+mcheck1 <- cstan(file = "C:/temp/Zooniverse/Final/scripts/models/day_night_total_vegpath_gp_copy.stan",
+                data = dlist,
+                chains = 2,
+                cores = 2,
+                warmup = 2000,
+                iter = 3000)
+
+
+
+
+
+mcheck <- cstan(file = "C:/temp/Zooniverse/Final/scripts/models/total_activity_total_novegpath_gp.stan",
+                data = dlist,
+                chains = 2,
+                cores = 2,
+                warmup = 1000,
+                iter = 2000)
+
+
+mcheck2 <- cstan(file = "C:/temp/Zooniverse/Final/scripts/models/total_activity_total_novegpath_gp.stan",
+                data = dlist,
+                chains = 2,
+                cores = 2,
+                warmup = 1000,
+                iter = 2000)
