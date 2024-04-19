@@ -377,7 +377,7 @@ tiff("fine_scale_total_novegpath.tiff", width = 15.83, height = 12.69, units = '
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7575, 4.2039, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -447,7 +447,7 @@ tiff("fine_scale_total_vegpath.tiff", width = 15.83, height = 12.69, units = 'cm
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7575, 4.2039, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -517,7 +517,7 @@ tiff("grid_square_total_novegpath.tiff", width = 15.83, height = 12.69, units = 
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.554, 3.585, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -587,7 +587,7 @@ tiff("grid_square_total_vegpath.tiff", width = 15.83, height = 12.69, units = 'c
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.554, 3.585, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -654,6 +654,8 @@ dev.off() # Close graphics device
 
 # Total number of detections ####
 setwd("C:/temp/Zooniverse/Final/processed/total_activity_jsons")
+all_dlist_fine <- list() # Keep dlists for plotting outputs
+all_dlist_grid <- list() # Keep dlists for plotting outputs
 for(sp in 1:length(key_sp)){
   # Subset to focal key species
   dat <- consensus_classifications %>% filter(species == key_sp[sp])
@@ -711,6 +713,7 @@ for(sp in 1:length(key_sp)){
   dlist$succulent[is.nan(dlist$succulent)] <- 0
   
   write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_fine_scale.json"))
+  all_dlist_fine[[sp]] <- dlist
   rm(dlist)
   
   # Grid square dlist
@@ -730,7 +733,7 @@ for(sp in 1:length(key_sp)){
     detections = as.integer(dat$detections),
     
     # Covariates
-    opuntia = standardize(dat$opuntia_total_cover),
+    opuntia = standardize(dat$volume_total),
     d_water = standardize(dat$dist_river),
     d_road = standardize(dat$dist_road),
     livestock = standardize(dat$livestock_proportion),
@@ -747,7 +750,11 @@ for(sp in 1:length(key_sp)){
   dlist$succulent[is.nan(dlist$succulent)] <- 0
   
   write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_grid_square.json"))
-}
+  all_dlist_grid[[sp]] <- dlist
+  }
+
+names(all_dlist_fine) <- key_sp
+names(all_dlist_grid) <- key_sp
 
 # Load output from JASMIN
 setwd("F:/JASMIN_outputs/total_activity_gp")
@@ -791,11 +798,13 @@ tiff("total_activity_grid_square_total_vegpath.tiff", width = 15.83, height = 12
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.554, 3.585, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
   s <- total_activity_post_list_grid1[[key_sp[i]]]
+  
+  df <- all_dlist_grid[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -825,12 +834,12 @@ for(i in 1:length(key_sp)){
   #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
-       ylab = "P(night)",
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(df$detections)+100), main="", 
+       ylab = "Total detections",
        xlab="Opuntia grid square vol.", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  axis(2, at = c(0, max(df$detections)+100), labels = c(0, max(df$detections)+100))
   
   #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
@@ -849,9 +858,7 @@ for(i in 1:length(key_sp)){
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
   
-  # Optional dashed lines at psi = 0.5 and x = 0
-  #abline(h = 0.5, lty = 2)
-  #abline(v = 0, lty = 2)
+  points(x = df$opuntia, y = df$detections, pch = 20)
 }
 dev.off() # Close graphics device
 
@@ -891,11 +898,13 @@ tiff("total_activity_grid_square_total_novegpath.tiff", width = 15.83, height = 
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.554, 3.585, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
   s <- total_activity_post_list_grid2[[key_sp[i]]]
+  
+  df <- all_dlist_grid[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -925,12 +934,12 @@ for(i in 1:length(key_sp)){
   #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
-       ylab = "P(night)",
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(df$detections)+100), main="", 
+       ylab = "Total detections",
        xlab="Opuntia grid square vol.", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  axis(2, at = c(0, max(df$detections)+100), labels = c(0, max(df$detections)+100))
   
   #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
@@ -949,9 +958,7 @@ for(i in 1:length(key_sp)){
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
   
-  # Optional dashed lines at psi = 0.5 and x = 0
-  #abline(h = 0.5, lty = 2)
-  #abline(v = 0, lty = 2)
+  points(x = df$opuntia, y = df$detections, pch = 20)
 }
 dev.off() # Close graphics device
 
@@ -991,11 +998,13 @@ tiff("total_activity_fine_scale_total_vegpath.tiff", width = 15.83, height = 12.
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7575, 4.2039, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
   s <- total_activity_post_list_fine1[[key_sp[i]]]
+  
+  df <- all_dlist_fine[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -1025,12 +1034,12 @@ for(i in 1:length(key_sp)){
   #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
-       ylab = "P(night)",
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(df$detections)+100), main="", 
+       ylab = "Total detections",
        xlab="Opuntia cover", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  axis(2, at = c(0, max(df$detections)+100), labels = c(0, max(df$detections)+100))
   
   #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
@@ -1049,9 +1058,7 @@ for(i in 1:length(key_sp)){
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
   
-  # Optional dashed lines at psi = 0.5 and x = 0
-  #abline(h = 0.5, lty = 2)
-  #abline(v = 0, lty = 2)
+  points(x = df$opuntia, y = df$detections, pch = 20)
 }
 dev.off() # Close graphics device
 
@@ -1091,11 +1098,12 @@ tiff("total_activity_fine_scale_total_novegpath.tiff", width = 15.83, height = 1
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7575, 4.2039, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
   s <- total_activity_post_list_fine2[[key_sp[i]]]
+  df <- all_dlist_fine[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -1125,12 +1133,12 @@ for(i in 1:length(key_sp)){
   #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
-       ylab = "P(night)",
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(df$detections)+100), main="", 
+       ylab = "Total detections",
        xlab="Opuntia cover", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  axis(2, at = c(0, max(df$detections)+100), labels = c(0, max(df$detections)+100))
   
   #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
@@ -1149,9 +1157,7 @@ for(i in 1:length(key_sp)){
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
   
-  # Optional dashed lines at psi = 0.5 and x = 0
-  #abline(h = 0.5, lty = 2)
-  #abline(v = 0, lty = 2)
+  points(x = df$opuntia, y = df$detections, pch = 20)
 }
 dev.off() # Close graphics device
 
@@ -1244,7 +1250,7 @@ for(sp in 1:length(key_sp)){
     surveyed = as.integer(dat$surveyed),
     
     # Covariates
-    opuntia = standardize(dat$opuntia_total_cover),
+    opuntia = standardize(dat$volume_total),
     d_water = standardize(dat$dist_river),
     d_road = standardize(dat$dist_road),
     livestock = standardize(dat$livestock_proportion),
@@ -1306,7 +1312,7 @@ tiff("day_night_grid_square_total_vegpath.tiff", width = 15.83, height = 12.69, 
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.554, 3.585, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1406,7 +1412,7 @@ tiff("day_night_grid_square_total_novegpath.tiff", width = 15.83, height = 12.69
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.554, 3.585, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1506,7 +1512,7 @@ tiff("day_night_fine_scale_total_vegpath.tiff", width = 15.83, height = 12.69, u
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7575, 4.2039, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1606,7 +1612,7 @@ tiff("day_night_fine_scale_total_novegpath.tiff", width = 15.83, height = 12.69,
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7575, 4.2039, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1669,4 +1675,3 @@ for(i in 1:length(key_sp)){
   #abline(v = 0, lty = 2)
 }
 dev.off() # Close graphics device
-
