@@ -2,7 +2,7 @@
 library(rethinking)
 library(dplyr)
 library(tidyr)
-library(bayesplot)
+#library(bayesplot)
 library(viridis)
 library(lubridate)
 library(posterior)
@@ -365,7 +365,7 @@ plot_titles <- c("A)", "B)", "C)", "D)",
                  "I)", "J)", "K)", "L)")
 
 # Colours for shading CI's
-species_colours <- c("#35B779FF","#440154FF")
+species_colours <- c("#35B779FF","#3E4A89FF")
 colouralpha <- 0.4
 
 # Set directory to save images
@@ -377,7 +377,7 @@ tiff("fine_scale_total_novegpath.tiff", width = 15.83, height = 12.69, units = '
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -399,8 +399,7 @@ for(i in 1:length(key_sp)){
   PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
   PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
   PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
-  
+
   mu2 <- apply(p_season2, 2, median)
   PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
@@ -408,8 +407,7 @@ for(i in 1:length(key_sp)){
   PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
   PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
-  
+
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = expression(psi),
@@ -418,19 +416,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -447,7 +445,7 @@ tiff("fine_scale_total_vegpath.tiff", width = 15.83, height = 12.69, units = 'cm
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -469,8 +467,7 @@ for(i in 1:length(key_sp)){
   PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
   PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
   PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
-  
+
   mu2 <- apply(p_season2, 2, median)
   PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
@@ -478,8 +475,7 @@ for(i in 1:length(key_sp)){
   PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
   PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
-  
+
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = expression(psi),
@@ -488,19 +484,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -517,7 +513,7 @@ tiff("grid_square_total_novegpath.tiff", width = 15.83, height = 12.69, units = 
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.05) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -539,8 +535,7 @@ for(i in 1:length(key_sp)){
   PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
   PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
   PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
-  
+
   mu2 <- apply(p_season2, 2, median)
   PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
@@ -548,8 +543,7 @@ for(i in 1:length(key_sp)){
   PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
   PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
-  
+
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = expression(psi),
@@ -558,19 +552,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -587,7 +581,7 @@ tiff("grid_square_total_vegpath.tiff", width = 15.83, height = 12.69, units = 'c
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.05) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -603,23 +597,21 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
-  
+  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
+
   mu2 <- apply(p_season2, 2, median)
-  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
-  
+  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
+
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = expression(psi),
@@ -628,19 +620,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -676,6 +668,7 @@ for(sp in 1:length(key_sp)){
   
   # Bind to site/grid covariates 
   dat_grouped <- merge(dat_grouped, site_data, by.x = "site", by.y = "Site_ID", all.x = TRUE)
+  dat_grouped <- merge(dat_grouped, sitedays, by.x = "site", by.y = "Site", all.x = TRUE)
   
   # Overwrite dat to avoid re-writing dlist code
   dat <- dat_grouped 
@@ -705,6 +698,9 @@ for(sp in 1:length(key_sp)){
     succulent = standardize(dat$succulent_total),
     tree = standardize(dat$n_trees),
     
+    # Number of days
+    days = standardize(dat$Days),
+    
     # Distance matrix
     dmat = dmat
   )
@@ -712,7 +708,7 @@ for(sp in 1:length(key_sp)){
   # In some cases, all succulent values are 0 so standardize returns NaN
   dlist$succulent[is.nan(dlist$succulent)] <- 0
   
-  write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_fine_scale.json"))
+  #write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_fine_scale.json"))
   all_dlist_fine[[sp]] <- dlist
   rm(dlist)
   
@@ -743,13 +739,16 @@ for(sp in 1:length(key_sp)){
     succulent = standardize(dat$succulent_total),
     tree = standardize(dat$n_trees),
     
+    # Number of days
+    days = standardize(dat$Days),
+    
     # Distance matrix
     dmat = dmat
   )
   # In some cases, all succulent values are 0 so standardize returns NaN
   dlist$succulent[is.nan(dlist$succulent)] <- 0
   
-  write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_grid_square.json"))
+  #write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_grid_square.json"))
   all_dlist_grid[[sp]] <- dlist
   }
 
@@ -790,7 +789,7 @@ plot_titles <- c("A)", "B)", "C)", "D)",
                  "I)", "J)", "K)", "L)")
 
 # Colours for shading CI's
-species_colours <- c("#35B779FF","#440154FF")
+species_colours <- c("#35B779FF","#3E4A89FF")
 colouralpha <- 0.4
 
 setwd("C:/temp/Zooniverse/Final/figures/total_activity_figures")
@@ -798,7 +797,7 @@ tiff("total_activity_grid_square_total_vegpath.tiff", width = 15.83, height = 12
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.05) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -816,44 +815,42 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
+  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
   
   mu2 <- apply(p_season2, 2, median)
-  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
+  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(df$detections)+100), main="", 
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+10), main="", 
        ylab = "Total detections",
        xlab="Opuntia grid square vol.", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, max(df$detections)+100), labels = c(0, max(df$detections)+100))
-  
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))+10), max(c(PI95_1, PI95_2))+10), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2))+10)), ceiling(max(c(PI95_1, PI95_2))+10)))
   
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -890,7 +887,7 @@ plot_titles <- c("A)", "B)", "C)", "D)",
                  "I)", "J)", "K)", "L)")
 
 # Colours for shading CI's
-species_colours <- c("#35B779FF","#440154FF")
+species_colours <- c("#35B779FF","#3E4A89FF")
 colouralpha <- 0.4
 
 setwd("C:/temp/Zooniverse/Final/figures/total_activity_figures")
@@ -898,7 +895,7 @@ tiff("total_activity_grid_square_total_novegpath.tiff", width = 15.83, height = 
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.05) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -916,44 +913,42 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
+  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
   
   mu2 <- apply(p_season2, 2, median)
-  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
+  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(df$detections)+100), main="", 
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+10), main="", 
        ylab = "Total detections",
        xlab="Opuntia grid square vol.", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, max(df$detections)+100), labels = c(0, max(df$detections)+100))
-  
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))+10), max(c(PI95_1, PI95_2))+10), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2))+10)), ceiling(max(c(PI95_1, PI95_2))+10)))
   
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -990,7 +985,7 @@ plot_titles <- c("A)", "B)", "C)", "D)",
                  "I)", "J)", "K)", "L)")
 
 # Colours for shading CI's
-species_colours <- c("#35B779FF","#440154FF")
+species_colours <- c("#35B779FF","#3E4A89FF")
 colouralpha <- 0.4
 
 setwd("C:/temp/Zooniverse/Final/figures/total_activity_figures")
@@ -998,13 +993,13 @@ tiff("total_activity_fine_scale_total_vegpath.tiff", width = 15.83, height = 12.
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
   s <- total_activity_post_list_fine1[[key_sp[i]]]
   
-  df <- all_dlist_fine[[key_sp[i]]]
+  df <- all_dlist_grid[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -1016,44 +1011,42 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
+  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
   
   mu2 <- apply(p_season2, 2, median)
-  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
+  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(df$detections)+100), main="", 
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+10), main="", 
        ylab = "Total detections",
        xlab="Opuntia cover", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, max(df$detections)+100), labels = c(0, max(df$detections)+100))
-  
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))+10), max(c(PI95_1, PI95_2))+10), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2))+10)), ceiling(max(c(PI95_1, PI95_2))+10)))
   
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -1090,7 +1083,7 @@ plot_titles <- c("A)", "B)", "C)", "D)",
                  "I)", "J)", "K)", "L)")
 
 # Colours for shading CI's
-species_colours <- c("#35B779FF","#440154FF")
+species_colours <- c("#35B779FF","#3E4A89FF")
 colouralpha <- 0.4
 
 setwd("C:/temp/Zooniverse/Final/figures/total_activity_figures")
@@ -1098,12 +1091,13 @@ tiff("total_activity_fine_scale_total_novegpath.tiff", width = 15.83, height = 1
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
   s <- total_activity_post_list_fine2[[key_sp[i]]]
-  df <- all_dlist_fine[[key_sp[i]]]
+  
+  df <- all_dlist_grid[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -1115,44 +1109,42 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
+  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
   
   mu2 <- apply(p_season2, 2, median)
-  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
+  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(df$detections)+100), main="", 
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+10), main="", 
        ylab = "Total detections",
        xlab="Opuntia cover", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, max(df$detections)+100), labels = c(0, max(df$detections)+100))
-  
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))+10), max(c(PI95_1, PI95_2))+10), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2))+10)), ceiling(max(c(PI95_1, PI95_2))+10)))
   
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -1304,7 +1296,7 @@ plot_titles <- c("A)", "B)", "C)", "D)",
                  "I)", "J)", "K)", "L)")
 
 # Colours for shading CI's
-species_colours <- c("#35B779FF","#440154FF")
+species_colours <- c("#35B779FF","#3E4A89FF")
 colouralpha <- 0.4
 
 setwd("C:/temp/Zooniverse/Final/figures/day_night_figures")
@@ -1312,7 +1304,7 @@ tiff("day_night_grid_square_total_vegpath.tiff", width = 15.83, height = 12.69, 
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.05) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1328,23 +1320,21 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
-  
+  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
+
   mu2 <- apply(p_season2, 2, median)
-  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
-  
+  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
+
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = "P(night)",
@@ -1353,19 +1343,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -1404,7 +1394,7 @@ plot_titles <- c("A)", "B)", "C)", "D)",
                  "I)", "J)", "K)", "L)")
 
 # Colours for shading CI's
-species_colours <- c("#35B779FF","#440154FF")
+species_colours <- c("#35B779FF","#3E4A89FF")
 colouralpha <- 0.4
 
 setwd("C:/temp/Zooniverse/Final/figures/day_night_figures")
@@ -1412,7 +1402,7 @@ tiff("day_night_grid_square_total_novegpath.tiff", width = 15.83, height = 12.69
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-1.52959, 3.06667, by = 0.01) # Use real min/max Opuntia volume (standardised) values
+xseq <- seq(-1.52959, 3.06667, by = 0.05) # Use real min/max Opuntia volume (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1428,23 +1418,21 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
-  
+  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
+
   mu2 <- apply(p_season2, 2, median)
-  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
-  
+  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
+
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = "P(night)",
@@ -1453,19 +1441,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -1504,7 +1492,7 @@ plot_titles <- c("A)", "B)", "C)", "D)",
                  "I)", "J)", "K)", "L)")
 
 # Colours for shading CI's
-species_colours <- c("#35B779FF","#440154FF")
+species_colours <- c("#35B779FF","#3E4A89FF")
 colouralpha <- 0.4
 
 setwd("C:/temp/Zooniverse/Final/figures/day_night_figures")
@@ -1512,7 +1500,7 @@ tiff("day_night_fine_scale_total_vegpath.tiff", width = 15.83, height = 12.69, u
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1528,23 +1516,21 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
-  
+  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
+
   mu2 <- apply(p_season2, 2, median)
-  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
-  
+  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
+
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = "P(night)",
@@ -1553,19 +1539,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
@@ -1604,7 +1590,7 @@ plot_titles <- c("A)", "B)", "C)", "D)",
                  "I)", "J)", "K)", "L)")
 
 # Colours for shading CI's
-species_colours <- c("#35B779FF","#440154FF")
+species_colours <- c("#35B779FF","#3E4A89FF")
 colouralpha <- 0.4
 
 setwd("C:/temp/Zooniverse/Final/figures/day_night_figures")
@@ -1612,7 +1598,7 @@ tiff("day_night_fine_scale_total_novegpath.tiff", width = 15.83, height = 12.69,
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1628,23 +1614,21 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  #PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  #PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  #PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  #PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-  #PI_all_1 <- rbind(PI95_1, PI89_1, PI80_1, PI70_1, PI60_1, PI50_1)
-  
+  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
+  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
+  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
+  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
+
   mu2 <- apply(p_season2, 2, median)
-  #PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
+  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  #PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  #PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  #PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  #PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-  #PI_all_2 <- rbind(PI95_2, PI89_2, PI80_2, PI70_2, PI60_2, PI50_2)
-  
+  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
+  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
+  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
+  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
+
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = "P(night)",
@@ -1653,19 +1637,19 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  #shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  
   #shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  #shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  
+  #shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
   
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
