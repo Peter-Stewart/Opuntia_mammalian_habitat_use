@@ -47,7 +47,7 @@ site_data2 <- merge(site_data2, dist_road, by="Site_ID")
 
 # Calculate total cover
 site_data1$opuntia_total_cover <- (site_data1$Opuntia_stricta_FOV + site_data1$Opuntia_other_FOV +
-                                    (3*site_data1$Opuntia_stricta_area) + (3*site_data1$Opuntia_other_area))/8
+                                     (3*site_data1$Opuntia_stricta_area) + (3*site_data1$Opuntia_other_area))/8
 
 site_data2$opuntia_total_cover <- (site_data2$Opuntia_stricta_FOV + site_data2$Opuntia_other_FOV +
                                      (3*site_data2$Opuntia_stricta_area) + (3*site_data2$Opuntia_other_area))/8
@@ -399,7 +399,7 @@ for(i in 1:length(key_sp)){
   PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
   PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
   PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-
+  
   mu2 <- apply(p_season2, 2, median)
   PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
@@ -407,7 +407,7 @@ for(i in 1:length(key_sp)){
   PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
   PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-
+  
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = expression(psi),
@@ -467,7 +467,7 @@ for(i in 1:length(key_sp)){
   PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
   PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
   PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-
+  
   mu2 <- apply(p_season2, 2, median)
   PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
@@ -475,7 +475,7 @@ for(i in 1:length(key_sp)){
   PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
   PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-
+  
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = expression(psi),
@@ -535,7 +535,7 @@ for(i in 1:length(key_sp)){
   PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
   PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
   PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-
+  
   mu2 <- apply(p_season2, 2, median)
   PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
@@ -543,7 +543,7 @@ for(i in 1:length(key_sp)){
   PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
   PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-
+  
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = expression(psi),
@@ -603,7 +603,7 @@ for(i in 1:length(key_sp)){
   PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
   PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
   PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-
+  
   mu2 <- apply(p_season2, 2, median)
   PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
   PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
@@ -611,7 +611,7 @@ for(i in 1:length(key_sp)){
   PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
   PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-
+  
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = expression(psi),
@@ -782,7 +782,7 @@ names(all_dlist_fine) <- key_sp
 names(all_dlist_grid) <- key_sp
 
 # Load output from JASMIN
-setwd("F:/JASMIN_outputs/total_activity_gp")
+setwd("C:/temp/camera_trap_models/total_activity/output")
 key_sp_alphabetical <- key_sp[order(key_sp)]
 pars <- c("lp__", 
           "alpha_bar",
@@ -829,7 +829,7 @@ xseq <- seq(-1.52959, 3.06667, by = 0.05) # Use real min/max Opuntia volume (sta
 for(i in 1:length(key_sp)){
   s <- total_activity_post_list_grid1[[key_sp[i]]]
   
-  df <- all_dlist_grid[[key_sp[i]]]
+  #df <- all_dlist_grid[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -857,12 +857,12 @@ for(i in 1:length(key_sp)){
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+10), main="", 
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+0.5), main="", 
        ylab = "Total detections",
        xlab="Opuntia grid square vol.", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))+10), max(c(PI95_1, PI95_2))+10), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2))+10)), ceiling(max(c(PI95_1, PI95_2))+10)))
+  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))), max(c(PI95_1, PI95_2))), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2)))), ceiling(max(c(PI95_1, PI95_2)))))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -881,13 +881,13 @@ for(i in 1:length(key_sp)){
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
   
-  points(x = df$opuntia, y = df$detections, pch = 20)
+  #points(x = df$opuntia, y = df$detections, pch = 20)
 }
 dev.off() # Close graphics device
 
 # Grid square total novegpath
-setwd("F:/JASMIN_outputs/total_activity_gp")
-file_list2 <- list.files(pattern = ".grid_square_total_novegpath.")
+setwd("C:/temp/camera_trap_models/total_activity/output")
+file_list2 <- list.files(pattern = ".grid_square_total_no_veg_path.")
 total_activity_post_list_grid2 <- list()
 total_activity_diagnostics_list_grid2 <- list()
 
@@ -927,7 +927,7 @@ xseq <- seq(-1.52959, 3.06667, by = 0.05) # Use real min/max Opuntia volume (sta
 for(i in 1:length(key_sp)){
   s <- total_activity_post_list_grid2[[key_sp[i]]]
   
-  df <- all_dlist_grid[[key_sp[i]]]
+  #df <- all_dlist_grid[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -955,12 +955,12 @@ for(i in 1:length(key_sp)){
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+10), main="", 
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+0.5), main="", 
        ylab = "Total detections",
        xlab="Opuntia grid square vol.", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))+10), max(c(PI95_1, PI95_2))+10), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2))+10)), ceiling(max(c(PI95_1, PI95_2))+10)))
+  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))), max(c(PI95_1, PI95_2))), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2)))), ceiling(max(c(PI95_1, PI95_2)))))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -979,12 +979,12 @@ for(i in 1:length(key_sp)){
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
   
-  points(x = df$opuntia, y = df$detections, pch = 20)
+  #points(x = df$opuntia, y = df$detections, pch = 20)
 }
 dev.off() # Close graphics device
 
 # Fine scale total vegpath
-setwd("F:/JASMIN_outputs/total_activity_gp")
+setwd("C:/temp/camera_trap_models/total_activity/output")
 file_list1 <- list.files(pattern = ".fine_scale_total_vegpath.")
 total_activity_post_list_fine1 <- list()
 total_activity_diagnostics_list_fine1 <- list()
@@ -1025,7 +1025,7 @@ xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standa
 for(i in 1:length(key_sp)){
   s <- total_activity_post_list_fine1[[key_sp[i]]]
   
-  df <- all_dlist_grid[[key_sp[i]]]
+  #df <- all_dlist_grid[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -1053,12 +1053,12 @@ for(i in 1:length(key_sp)){
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+10), main="", 
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+0.5), main="", 
        ylab = "Total detections",
        xlab="Opuntia cover", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))+10), max(c(PI95_1, PI95_2))+10), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2))+10)), ceiling(max(c(PI95_1, PI95_2))+10)))
+  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))), max(c(PI95_1, PI95_2))), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2)))), ceiling(max(c(PI95_1, PI95_2)))))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -1077,13 +1077,13 @@ for(i in 1:length(key_sp)){
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
   
-  points(x = df$opuntia, y = df$detections, pch = 20)
+  #points(x = df$opuntia, y = df$detections, pch = 20)
 }
 dev.off() # Close graphics device
 
 # Fine scale total novegpath
-setwd("F:/JASMIN_outputs/total_activity_gp")
-file_list2 <- list.files(pattern = ".fine_scale_total_novegpath.")
+setwd("C:/temp/camera_trap_models/total_activity/output")
+file_list2 <- list.files(pattern = ".fine_scale_total_no_veg_path.")
 total_activity_post_list_fine2 <- list()
 total_activity_diagnostics_list_fine2 <- list()
 
@@ -1123,7 +1123,7 @@ xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standa
 for(i in 1:length(key_sp)){
   s <- total_activity_post_list_fine2[[key_sp[i]]]
   
-  df <- all_dlist_grid[[key_sp[i]]]
+  #df <- all_dlist_grid[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -1151,12 +1151,12 @@ for(i in 1:length(key_sp)){
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+10), main="", 
+  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+0.5), main="", 
        ylab = "Total detections",
        xlab="Opuntia cover", 
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
-  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))+10), max(c(PI95_1, PI95_2))+10), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2))+10)), ceiling(max(c(PI95_1, PI95_2))+10)))
+  axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))), max(c(PI95_1, PI95_2))), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2)))), ceiling(max(c(PI95_1, PI95_2)))))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -1175,7 +1175,7 @@ for(i in 1:length(key_sp)){
   points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
   points(x = xseq, y = mu1, type="l", lwd=2)
   
-  points(x = df$opuntia, y = df$detections, pch = 20)
+  #points(x = df$opuntia, y = df$detections, pch = 20)
 }
 dev.off() # Close graphics device
 
