@@ -461,7 +461,7 @@ for(i in 1:length(key_sp)){
   }
   
   mu1 <- apply(p_season1, 2, median)
-  #PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
+  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
   PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
   PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
   PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
@@ -645,7 +645,7 @@ dev.off() # Close graphics device
 
 
 # Total number of detections ####
-setwd("C:/temp/Zooniverse/Final/processed/total_activity_jsons")
+setwd("C:/temp/Zooniverse/Final/processed/total_activity_jsons/day_counts")
 all_dlist_fine <- list() # Keep dlists for plotting outputs
 all_dlist_grid <- list() # Keep dlists for plotting outputs
 for(sp in 1:length(key_sp)){
@@ -655,31 +655,57 @@ for(sp in 1:length(key_sp)){
   # Indicate observation
   dat$detections <- 1L
   
-  # Group by site and calculate total number of obs
-  dat_grouped <- dat %>% group_by(site) %>%
+  # Group by site and date and calculate total number of obs
+  dat$DateLub <- date(dat$DateTimeLub)
+  dat_grouped <- dat %>% group_by(site, DateLub) %>%
     summarise(across(c(detections), sum))
   dat_grouped$site <- as.integer(gsub("Site_", "", dat_grouped$site))
   
-  # Sites with no detections are missing - add them back in
-  sites_all <- as.data.frame(sitedays$Site)
-  colnames(sites_all) <- "site"
-  dat_grouped <- merge(sites_all, dat_grouped, by = "site", all.x = TRUE)
+  # Sites and dates with no detections are missing - add them back in
+  sites_k <- startends %>% select(Site, Deploy_date_lub, Days) %>% 
+    filter(!is.na(Days)) %>%
+    uncount(Days)
+  sites_k$Site <- ifelse(sites_k$Site < 10, paste0("0", sites_k$Site), sites_k$Site)
+  sites_k$Site <- paste0("Site_",sites_k$Site)
+  sites_k$Site_f <- as.factor(sites_k$Site)
+  k <- rep(NA, nrow(sites_k))
+  k[1] <- 1
+  sites_k <- cbind(sites_k,k)
+  for(i in 2:nrow(sites_k)){
+    if(sites_k$Site[i]==sites_k$Site[i-1])
+      sites_k$k[i] <-  sites_k$k[i-1] + 1L 
+    else
+      sites_k$k[i] <- 1L
+  }
+  sites_k$k_date <- sites_k$Deploy_date_lub + (sites_k$k - 1)
+  
+  sites_all <- sites_k %>% select(Site, k_date)
+  sites_all$Site <- as.integer(gsub("Site_", "", sites_all$Site))
+  colnames(sites_all) <- c("site", "DateLub")
+  
+  dat_grouped <- merge(sites_all, dat_grouped, by = c("site", "DateLub"), all.x = TRUE)
   dat_grouped$detections[is.na(dat_grouped$detections)] <- 0
+  dat_grouped$detections <- as.integer(dat_grouped$detections)
   
   # Bind to site/grid covariates 
   dat_grouped <- merge(dat_grouped, site_data, by.x = "site", by.y = "Site_ID", all.x = TRUE)
-  dat_grouped <- merge(dat_grouped, sitedays, by.x = "site", by.y = "Site", all.x = TRUE)
   
   # Overwrite dat to avoid re-writing dlist code
   dat <- dat_grouped 
   
+  # Coordinates of each site
+  site_coords <- dat %>% select(site, GPS_long, GPS_lat)
+  site_coords <- unique(site_coords)
+  
   # Generate distance matrix
-  dmat <- generate_distance_matrix(dat, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
+  dmat <- generate_distance_matrix(site_coords, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
   
   # Site data dlist
   dlist <- list(
     # Observation and season indexes
     n_obs = as.integer(nrow(dat)),
+    n_site = as.integer(nrow(site_coords)),
+    site_ind = as.integer(as.factor(dat$site)),
     
     season = as.integer(ifelse(dat$site >= 2000, 2, 1)),
     nseasons = 2L,
@@ -698,9 +724,6 @@ for(sp in 1:length(key_sp)){
     succulent = standardize(dat$succulent_total),
     tree = standardize(dat$n_trees),
     
-    # Number of days
-    days = standardize(dat$Days),
-    
     # Distance matrix
     dmat = dmat
   )
@@ -708,20 +731,26 @@ for(sp in 1:length(key_sp)){
   # In some cases, all succulent values are 0 so standardize returns NaN
   dlist$succulent[is.nan(dlist$succulent)] <- 0
   
-  #write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_fine_scale.json"))
+  write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_fine_scale.json"))
   all_dlist_fine[[sp]] <- dlist
   rm(dlist)
   
   # Grid square dlist
   dat <- dat %>% filter(!is.na(volume_total))
   
-  # Generate distance matrix
-  dmat <- generate_distance_matrix(dat, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
+  # Coordinates of each site
+  site_coords <- dat %>% select(site, GPS_long, GPS_lat)
+  site_coords <- unique(site_coords)
   
+  # Generate distance matrix
+  dmat <- generate_distance_matrix(site_coords, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
   
   dlist <- list(
     # Observation and season indexes
     n_obs = as.integer(nrow(dat)),
+    n_site = as.integer(nrow(site_coords)),
+    site_ind = as.integer(as.factor(dat$site)),
+    
     season = as.integer(ifelse(dat$site >= 2000, 2, 1)),
     nseasons = 2L,
     
@@ -739,18 +768,15 @@ for(sp in 1:length(key_sp)){
     succulent = standardize(dat$succulent_total),
     tree = standardize(dat$n_trees),
     
-    # Number of days
-    days = standardize(dat$Days),
-    
     # Distance matrix
     dmat = dmat
   )
   # In some cases, all succulent values are 0 so standardize returns NaN
   dlist$succulent[is.nan(dlist$succulent)] <- 0
   
-  #write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_grid_square.json"))
+  write_stan_json(data = dlist, file = paste0(key_sp[sp],"_total_activity_dlist_grid_square.json"))
   all_dlist_grid[[sp]] <- dlist
-  }
+}
 
 names(all_dlist_fine) <- key_sp
 names(all_dlist_grid) <- key_sp
@@ -1155,31 +1181,37 @@ dev.off() # Close graphics device
 
 
 # Night/day detections ####
-setwd("C:/temp/Zooniverse/Final/processed/day_night_detection_jsons/gp")
+setwd("C:/temp/Zooniverse/Final/processed/day_night_detection_jsons/lunar")
+all_dlist_fine <- list()
+all_dlist_grid <- list()
 for(sp in 1:length(key_sp)){
   # Subset to focal key species
   dat <- consensus_classifications %>% filter(species == key_sp[sp])
   
   # Obtain solar noon times for each observation
   duskdawn <- getSunlightTimes(date = date(dat$DateTimeLub),
-                                 lat = 0.293061,
-                                 lon = 36.899246,
-                                 keep = c("dusk", "dawn"),
-                                 tz = "Africa/Nairobi")
+                               lat = 0.293061,
+                               lon = 36.899246,
+                               keep = c("dusk", "dawn"),
+                               tz = "Africa/Nairobi")
   
   # Force times to UTC as camera trap datetimes are (incorrectly) stored as UTC
   duskdawn$dusk <- force_tz(duskdawn$dusk, "UTC")
   duskdawn$dawn <- force_tz(duskdawn$dawn, "UTC")
   
-  
   # Indicate whether observation is at night
   dat$night <- ifelse(dat$DateTimeLub < duskdawn$dawn | dat$DateTimeLub > duskdawn$dusk, 1, 0)
   dat$surveyed <- 1L
   
-  
-  # Group by site and calculate total number of obs. at night, and in total
-  dat_grouped <- dat %>% group_by(site) %>%
+  # Group by site and date and calculate total number of obs. at night, and in total
+  dat$DateLub <- date(dat$DateTimeLub)
+  dat_grouped <- dat %>% group_by(site, DateLub) %>%
     summarise(across(c(night, surveyed), sum))
+  
+  # Obtain lunar illumination for each date
+  moon <- getMoonIllumination(date = dat_grouped$DateLub,
+                              keep = "fraction")
+  dat_grouped$moon <- moon$fraction
   
   # Bind to site/grid covariates 
   dat_grouped$site <- as.integer(gsub("Site_", "", dat_grouped$site))
@@ -1188,14 +1220,20 @@ for(sp in 1:length(key_sp)){
   # Overwrite dat to avoid re-writing dlist code
   dat <- dat_grouped 
   
+  # Coordinates of each site
+  site_coords <- dat %>% select(site, GPS_long, GPS_lat)
+  site_coords <- unique(site_coords)
+  
   # Generate distance matrix
-  dmat <- generate_distance_matrix(dat, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
-
+  dmat <- generate_distance_matrix(site_coords, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
+  
   # Site data dlist
   dlist <- list(
     # Observation and season indexes
     n_obs = as.integer(nrow(dat)),
-
+    n_site = as.integer(nrow(site_coords)),
+    site_ind = as.integer(as.factor(dat$site)),
+    
     season = as.integer(ifelse(dat$site >= 2000, 2, 1)),
     nseasons = 2L,
     
@@ -1213,6 +1251,7 @@ for(sp in 1:length(key_sp)){
     shrub = standardize(dat$shrub_total),
     succulent = standardize(dat$succulent_total),
     tree = standardize(dat$n_trees),
+    moon = dat$moon,
     
     # Distance matrix
     dmat = dmat
@@ -1222,18 +1261,24 @@ for(sp in 1:length(key_sp)){
   dlist$succulent[is.nan(dlist$succulent)] <- 0
   
   write_stan_json(data = dlist, file = paste0(key_sp[sp],"_day_night_detection_dlist_fine_scale.json"))
+  all_dlist_fine[[sp]] <- dlist
   rm(dlist)
   
   # Grid square dlist
   dat <- dat %>% filter(!is.na(volume_total))
+  site_coords <- dat %>% select(site, GPS_long, GPS_lat)
+  site_coords <- unique(site_coords)
   
   # Generate distance matrix
-  dmat <- generate_distance_matrix(dat, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
+  dmat <- generate_distance_matrix(site_coords, rescale = TRUE, rescale_constant = 6000, log = FALSE, jitter = FALSE)
   
   
   dlist <- list(
     # Observation and season indexes
     n_obs = as.integer(nrow(dat)),
+    n_site = as.integer(nrow(site_coords)),
+    site_ind = as.integer(as.factor(dat$site)),
+    
     season = as.integer(ifelse(dat$site >= 2000, 2, 1)),
     nseasons = 2L,
     
@@ -1251,6 +1296,7 @@ for(sp in 1:length(key_sp)){
     shrub = standardize(dat$shrub_total),
     succulent = standardize(dat$succulent_total),
     tree = standardize(dat$n_trees),
+    moon = dat$moon,
     
     # Distance matrix
     dmat = dmat
@@ -1259,7 +1305,11 @@ for(sp in 1:length(key_sp)){
   dlist$succulent[is.nan(dlist$succulent)] <- 0
   
   write_stan_json(data = dlist, file = paste0(key_sp[sp],"_day_night_detection_dlist_grid_square.json"))
+  all_dlist_grid[[sp]] <- dlist
+  
 }
+names(all_dlist_fine) <- key_sp
+names(all_dlist_grid) <- key_sp
 
 
 # Load output from JASMIN
@@ -1267,7 +1317,9 @@ setwd("F:/JASMIN_outputs/day_night_detection_gp")
 key_sp_alphabetical <- key_sp[order(key_sp)]
 pars <- c("lp__", 
           "alpha_bar",
-          "beta_opuntia")
+          "beta_opuntia",
+          "beta_moon",
+          "gamma_moon")
 
 # Grid square total vegpath
 file_list1 <- list.files(pattern = ".grid_square_total_vegpath.")
@@ -1311,30 +1363,58 @@ for(i in 1:length(key_sp)){
   s <- day_night_post_list_grid1[[key_sp[i]]]
   
   # Calculate marginal effects
-  p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
-  p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season1a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season1b <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
+  p_season2a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season2b <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
   
   for(x in 1:length(xseq)){
-    p_season1[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
-    p_season2[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+    
+    
+    p_season1a[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season1b[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x] + 
+                                  s$`beta_moon[1]` + s$`gamma_moon[1]`*xseq[x])
+    
+    
+    p_season2a[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+    p_season2b[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x] + 
+                                  s$`beta_moon[2]` + s$`gamma_moon[2]`*xseq[x])  
   }
   
-  mu1 <- apply(p_season1, 2, median)
-  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
-  PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-
-  mu2 <- apply(p_season2, 2, median)
-  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
-  PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-
+  mu1a <- apply(p_season1a, 2, median)
+  PI95_1a <- apply(p_season1a, 2, HPDI, prob=0.95)
+  PI89_1a <- apply(p_season1a, 2, HPDI, prob=0.89)
+  PI80_1a <- apply(p_season1a, 2, HPDI, prob=0.80)
+  PI70_1a <- apply(p_season1a, 2, HPDI, prob=0.70)
+  PI60_1a <- apply(p_season1a, 2, HPDI, prob=0.60)
+  PI50_1a <- apply(p_season1a, 2, HPDI, prob=0.50)
+  
+  mu1b <- apply(p_season1b, 2, median)
+  PI95_1b <- apply(p_season1b, 2, HPDI, prob=0.95)
+  PI89_1b <- apply(p_season1b, 2, HPDI, prob=0.89)
+  PI80_1b <- apply(p_season1b, 2, HPDI, prob=0.80)
+  PI70_1b <- apply(p_season1b, 2, HPDI, prob=0.70)
+  PI60_1b <- apply(p_season1b, 2, HPDI, prob=0.60)
+  PI50_1b <- apply(p_season1b, 2, HPDI, prob=0.50)
+  
+  mu2a <- apply(p_season2a, 2, median)
+  PI95_2a <- apply(p_season2a, 2, HPDI, prob=0.95)
+  PI89_2a <- apply(p_season2a, 2, HPDI, prob=0.89)
+  PI80_2a <- apply(p_season2a, 2, HPDI, prob=0.80)
+  PI70_2a <- apply(p_season2a, 2, HPDI, prob=0.70)
+  PI60_2a <- apply(p_season2a, 2, HPDI, prob=0.60)
+  PI50_2a <- apply(p_season2a, 2, HPDI, prob=0.50)
+  
+  mu2b <- apply(p_season2b, 2, median)
+  PI95_2b <- apply(p_season2b, 2, HPDI, prob=0.95)
+  PI89_2b <- apply(p_season2b, 2, HPDI, prob=0.89)
+  PI80_2b <- apply(p_season2b, 2, HPDI, prob=0.80)
+  PI70_2b <- apply(p_season2b, 2, HPDI, prob=0.70)
+  PI60_2b <- apply(p_season2b, 2, HPDI, prob=0.60)
+  PI50_2b <- apply(p_season2b, 2, HPDI, prob=0.50)
+  
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = "P(night)",
@@ -1343,22 +1423,39 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI95_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
   
-  shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI95_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
   
-  points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
-  points(x = xseq, y = mu1, type="l", lwd=2)
+  #shade(PI95_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  #shade(PI95_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  points(x = xseq, y = mu2a, type="l", lwd=2, lty = 2)
+  points(x = xseq, y = mu2b, type="l", lwd=2, lty = 4)
+  
+  points(x = xseq, y = mu1a, type="l", lwd=2)
+  points(x = xseq, y = mu1b, type="l", lwd=2, lty = 3)
   
   # Optional dashed lines at psi = 0.5 and x = 0
   #abline(h = 0.5, lty = 2)
@@ -1406,33 +1503,61 @@ xseq <- seq(-1.52959, 3.06667, by = 0.05) # Use real min/max Opuntia volume (sta
 
 # Loop over each species
 for(i in 1:length(key_sp)){
-  s <- day_night_post_list_grid2[[key_sp[i]]]
+  s <- day_night_post_list_grid1[[key_sp[i]]]
   
   # Calculate marginal effects
-  p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
-  p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season1a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season1b <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
+  p_season2a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season2b <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
   
   for(x in 1:length(xseq)){
-    p_season1[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
-    p_season2[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+    
+    
+    p_season1a[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season1b[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x] + 
+                                  s$`beta_moon[1]` + s$`gamma_moon[1]`*xseq[x])
+    
+    
+    p_season2a[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+    p_season2b[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x] + 
+                                  s$`beta_moon[2]` + s$`gamma_moon[2]`*xseq[x])  
   }
   
-  mu1 <- apply(p_season1, 2, median)
-  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
-  PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-
-  mu2 <- apply(p_season2, 2, median)
-  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
-  PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-
+  mu1a <- apply(p_season1a, 2, median)
+  PI95_1a <- apply(p_season1a, 2, HPDI, prob=0.95)
+  PI89_1a <- apply(p_season1a, 2, HPDI, prob=0.89)
+  PI80_1a <- apply(p_season1a, 2, HPDI, prob=0.80)
+  PI70_1a <- apply(p_season1a, 2, HPDI, prob=0.70)
+  PI60_1a <- apply(p_season1a, 2, HPDI, prob=0.60)
+  PI50_1a <- apply(p_season1a, 2, HPDI, prob=0.50)
+  
+  mu1b <- apply(p_season1b, 2, median)
+  PI95_1b <- apply(p_season1b, 2, HPDI, prob=0.95)
+  PI89_1b <- apply(p_season1b, 2, HPDI, prob=0.89)
+  PI80_1b <- apply(p_season1b, 2, HPDI, prob=0.80)
+  PI70_1b <- apply(p_season1b, 2, HPDI, prob=0.70)
+  PI60_1b <- apply(p_season1b, 2, HPDI, prob=0.60)
+  PI50_1b <- apply(p_season1b, 2, HPDI, prob=0.50)
+  
+  mu2a <- apply(p_season2a, 2, median)
+  PI95_2a <- apply(p_season2a, 2, HPDI, prob=0.95)
+  PI89_2a <- apply(p_season2a, 2, HPDI, prob=0.89)
+  PI80_2a <- apply(p_season2a, 2, HPDI, prob=0.80)
+  PI70_2a <- apply(p_season2a, 2, HPDI, prob=0.70)
+  PI60_2a <- apply(p_season2a, 2, HPDI, prob=0.60)
+  PI50_2a <- apply(p_season2a, 2, HPDI, prob=0.50)
+  
+  mu2b <- apply(p_season2b, 2, median)
+  PI95_2b <- apply(p_season2b, 2, HPDI, prob=0.95)
+  PI89_2b <- apply(p_season2b, 2, HPDI, prob=0.89)
+  PI80_2b <- apply(p_season2b, 2, HPDI, prob=0.80)
+  PI70_2b <- apply(p_season2b, 2, HPDI, prob=0.70)
+  PI60_2b <- apply(p_season2b, 2, HPDI, prob=0.60)
+  PI50_2b <- apply(p_season2b, 2, HPDI, prob=0.50)
+  
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = "P(night)",
@@ -1441,22 +1566,39 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI95_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
   
-  shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI95_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
   
-  points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
-  points(x = xseq, y = mu1, type="l", lwd=2)
+  #shade(PI95_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  #shade(PI95_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  points(x = xseq, y = mu2a, type="l", lwd=2, lty = 2)
+  points(x = xseq, y = mu2b, type="l", lwd=2, lty = 4)
+  
+  points(x = xseq, y = mu1a, type="l", lwd=2)
+  points(x = xseq, y = mu1b, type="l", lwd=2, lty = 3)
   
   # Optional dashed lines at psi = 0.5 and x = 0
   #abline(h = 0.5, lty = 2)
@@ -1504,33 +1646,61 @@ xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standa
 
 # Loop over each species
 for(i in 1:length(key_sp)){
-  s <- day_night_post_list_fine1[[key_sp[i]]]
+  s <- day_night_post_list_grid1[[key_sp[i]]]
   
   # Calculate marginal effects
-  p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
-  p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season1a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season1b <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
+  p_season2a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season2b <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
   
   for(x in 1:length(xseq)){
-    p_season1[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
-    p_season2[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+    
+    
+    p_season1a[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season1b[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x] + 
+                                  s$`beta_moon[1]` + s$`gamma_moon[1]`*xseq[x])
+    
+    
+    p_season2a[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+    p_season2b[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x] + 
+                                  s$`beta_moon[2]` + s$`gamma_moon[2]`*xseq[x])  
   }
   
-  mu1 <- apply(p_season1, 2, median)
-  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
-  PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-
-  mu2 <- apply(p_season2, 2, median)
-  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
-  PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-
+  mu1a <- apply(p_season1a, 2, median)
+  PI95_1a <- apply(p_season1a, 2, HPDI, prob=0.95)
+  PI89_1a <- apply(p_season1a, 2, HPDI, prob=0.89)
+  PI80_1a <- apply(p_season1a, 2, HPDI, prob=0.80)
+  PI70_1a <- apply(p_season1a, 2, HPDI, prob=0.70)
+  PI60_1a <- apply(p_season1a, 2, HPDI, prob=0.60)
+  PI50_1a <- apply(p_season1a, 2, HPDI, prob=0.50)
+  
+  mu1b <- apply(p_season1b, 2, median)
+  PI95_1b <- apply(p_season1b, 2, HPDI, prob=0.95)
+  PI89_1b <- apply(p_season1b, 2, HPDI, prob=0.89)
+  PI80_1b <- apply(p_season1b, 2, HPDI, prob=0.80)
+  PI70_1b <- apply(p_season1b, 2, HPDI, prob=0.70)
+  PI60_1b <- apply(p_season1b, 2, HPDI, prob=0.60)
+  PI50_1b <- apply(p_season1b, 2, HPDI, prob=0.50)
+  
+  mu2a <- apply(p_season2a, 2, median)
+  PI95_2a <- apply(p_season2a, 2, HPDI, prob=0.95)
+  PI89_2a <- apply(p_season2a, 2, HPDI, prob=0.89)
+  PI80_2a <- apply(p_season2a, 2, HPDI, prob=0.80)
+  PI70_2a <- apply(p_season2a, 2, HPDI, prob=0.70)
+  PI60_2a <- apply(p_season2a, 2, HPDI, prob=0.60)
+  PI50_2a <- apply(p_season2a, 2, HPDI, prob=0.50)
+  
+  mu2b <- apply(p_season2b, 2, median)
+  PI95_2b <- apply(p_season2b, 2, HPDI, prob=0.95)
+  PI89_2b <- apply(p_season2b, 2, HPDI, prob=0.89)
+  PI80_2b <- apply(p_season2b, 2, HPDI, prob=0.80)
+  PI70_2b <- apply(p_season2b, 2, HPDI, prob=0.70)
+  PI60_2b <- apply(p_season2b, 2, HPDI, prob=0.60)
+  PI50_2b <- apply(p_season2b, 2, HPDI, prob=0.50)
+  
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = "P(night)",
@@ -1539,22 +1709,39 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI95_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
   
-  shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI95_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
   
-  points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
-  points(x = xseq, y = mu1, type="l", lwd=2)
+  #shade(PI95_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  #shade(PI95_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  points(x = xseq, y = mu2a, type="l", lwd=2, lty = 2)
+  points(x = xseq, y = mu2b, type="l", lwd=2, lty = 4)
+  
+  points(x = xseq, y = mu1a, type="l", lwd=2)
+  points(x = xseq, y = mu1b, type="l", lwd=2, lty = 3)
   
   # Optional dashed lines at psi = 0.5 and x = 0
   #abline(h = 0.5, lty = 2)
@@ -1602,33 +1789,61 @@ xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standa
 
 # Loop over each species
 for(i in 1:length(key_sp)){
-  s <- day_night_post_list_fine2[[key_sp[i]]]
+  s <- day_night_post_list_grid1[[key_sp[i]]]
   
   # Calculate marginal effects
-  p_season1 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
-  p_season2 <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season1a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season1b <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
+  p_season2a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  p_season2b <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
+  
   
   for(x in 1:length(xseq)){
-    p_season1[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
-    p_season2[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+    
+    
+    p_season1a[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x])
+    p_season1b[,x] <- inv_logit(s$`alpha_bar[1]` + s$`beta_opuntia[1]`*xseq[x] + 
+                                  s$`beta_moon[1]` + s$`gamma_moon[1]`*xseq[x])
+    
+    
+    p_season2a[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x])
+    p_season2b[,x] <- inv_logit(s$`alpha_bar[2]` + s$`beta_opuntia[2]`*xseq[x] + 
+                                  s$`beta_moon[2]` + s$`gamma_moon[2]`*xseq[x])  
   }
   
-  mu1 <- apply(p_season1, 2, median)
-  PI95_1 <- apply(p_season1, 2, HPDI, prob=0.95)
-  PI89_1 <- apply(p_season1, 2, HPDI, prob=0.89)
-  PI80_1 <- apply(p_season1, 2, HPDI, prob=0.80)
-  PI70_1 <- apply(p_season1, 2, HPDI, prob=0.70)
-  PI60_1 <- apply(p_season1, 2, HPDI, prob=0.60)
-  PI50_1 <- apply(p_season1, 2, HPDI, prob=0.50)
-
-  mu2 <- apply(p_season2, 2, median)
-  PI95_2 <- apply(p_season2, 2, HPDI, prob=0.95)
-  PI89_2 <- apply(p_season2, 2, HPDI, prob=0.89)
-  PI80_2 <- apply(p_season2, 2, HPDI, prob=0.80)
-  PI70_2 <- apply(p_season2, 2, HPDI, prob=0.70)
-  PI60_2 <- apply(p_season2, 2, HPDI, prob=0.60)
-  PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
-
+  mu1a <- apply(p_season1a, 2, median)
+  PI95_1a <- apply(p_season1a, 2, HPDI, prob=0.95)
+  PI89_1a <- apply(p_season1a, 2, HPDI, prob=0.89)
+  PI80_1a <- apply(p_season1a, 2, HPDI, prob=0.80)
+  PI70_1a <- apply(p_season1a, 2, HPDI, prob=0.70)
+  PI60_1a <- apply(p_season1a, 2, HPDI, prob=0.60)
+  PI50_1a <- apply(p_season1a, 2, HPDI, prob=0.50)
+  
+  mu1b <- apply(p_season1b, 2, median)
+  PI95_1b <- apply(p_season1b, 2, HPDI, prob=0.95)
+  PI89_1b <- apply(p_season1b, 2, HPDI, prob=0.89)
+  PI80_1b <- apply(p_season1b, 2, HPDI, prob=0.80)
+  PI70_1b <- apply(p_season1b, 2, HPDI, prob=0.70)
+  PI60_1b <- apply(p_season1b, 2, HPDI, prob=0.60)
+  PI50_1b <- apply(p_season1b, 2, HPDI, prob=0.50)
+  
+  mu2a <- apply(p_season2a, 2, median)
+  PI95_2a <- apply(p_season2a, 2, HPDI, prob=0.95)
+  PI89_2a <- apply(p_season2a, 2, HPDI, prob=0.89)
+  PI80_2a <- apply(p_season2a, 2, HPDI, prob=0.80)
+  PI70_2a <- apply(p_season2a, 2, HPDI, prob=0.70)
+  PI60_2a <- apply(p_season2a, 2, HPDI, prob=0.60)
+  PI50_2a <- apply(p_season2a, 2, HPDI, prob=0.50)
+  
+  mu2b <- apply(p_season2b, 2, median)
+  PI95_2b <- apply(p_season2b, 2, HPDI, prob=0.95)
+  PI89_2b <- apply(p_season2b, 2, HPDI, prob=0.89)
+  PI80_2b <- apply(p_season2b, 2, HPDI, prob=0.80)
+  PI70_2b <- apply(p_season2b, 2, HPDI, prob=0.70)
+  PI60_2b <- apply(p_season2b, 2, HPDI, prob=0.60)
+  PI50_2b <- apply(p_season2b, 2, HPDI, prob=0.50)
+  
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = "P(night)",
@@ -1637,22 +1852,39 @@ for(i in 1:length(key_sp)){
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
-  shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI80_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI70_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI60_2, xseq, col=col.alpha(species_colours[2], colouralpha))
-  shade(PI50_2, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI95_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
   
-  shade(PI95_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI89_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI80_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI70_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI60_1, xseq, col=col.alpha(species_colours[1], colouralpha))
-  shade(PI50_1, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI95_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  shade(PI89_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI80_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI70_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI60_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
+  #shade(PI50_2b, xseq, col=col.alpha(species_colours[2], colouralpha))
   
-  points(x = xseq, y = mu2, type="l", lwd=2, lty = 2)
-  points(x = xseq, y = mu1, type="l", lwd=2)
+  #shade(PI95_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1a, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  #shade(PI95_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  shade(PI89_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI80_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI70_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI60_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  #shade(PI50_1b, xseq, col=col.alpha(species_colours[1], colouralpha))
+  
+  points(x = xseq, y = mu2a, type="l", lwd=2, lty = 2)
+  points(x = xseq, y = mu2b, type="l", lwd=2, lty = 4)
+  
+  points(x = xseq, y = mu1a, type="l", lwd=2)
+  points(x = xseq, y = mu1b, type="l", lwd=2, lty = 3)
   
   # Optional dashed lines at psi = 0.5 and x = 0
   #abline(h = 0.5, lty = 2)
