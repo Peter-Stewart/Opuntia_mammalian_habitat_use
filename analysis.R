@@ -1181,7 +1181,7 @@ dev.off() # Close graphics device
 
 
 # Night/day detections ####
-setwd("C:/temp/Zooniverse/Final/processed/day_night_detection_jsons/lunar")
+setwd("C:/temp/camera_trap_models/day_night_detection/output")
 all_dlist_fine <- list()
 all_dlist_grid <- list()
 for(sp in 1:length(key_sp)){
@@ -1313,7 +1313,7 @@ names(all_dlist_grid) <- key_sp
 
 
 # Load output from JASMIN
-setwd("F:/JASMIN_outputs/day_night_detection_gp")
+setwd("C:/temp/camera_trap_models/day_night_detection/output")
 key_sp_alphabetical <- key_sp[order(key_sp)]
 pars <- c("lp__", 
           "alpha_bar",
@@ -1464,8 +1464,8 @@ for(i in 1:length(key_sp)){
 dev.off() # Close graphics device
 
 # Grid square total novegpath
-setwd("F:/JASMIN_outputs/day_night_detection_gp")
-file_list2 <- list.files(pattern = ".grid_square_total_novegpath.")
+setwd("C:/temp/camera_trap_models/day_night_detection/output")
+file_list2 <- list.files(pattern = ".grid_square_total_no_veg_path.")
 day_night_post_list_grid2 <- list()
 day_night_diagnostics_list_grid2 <- list()
 
@@ -1503,7 +1503,7 @@ xseq <- seq(-1.52959, 3.06667, by = 0.05) # Use real min/max Opuntia volume (sta
 
 # Loop over each species
 for(i in 1:length(key_sp)){
-  s <- day_night_post_list_grid1[[key_sp[i]]]
+  s <- day_night_post_list_grid2[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -1607,7 +1607,7 @@ for(i in 1:length(key_sp)){
 dev.off() # Close graphics device
 
 # Fine scale total vegpath
-setwd("F:/JASMIN_outputs/day_night_detection_gp")
+setwd("C:/temp/camera_trap_models/day_night_detection/output")
 file_list1 <- list.files(pattern = ".fine_scale_total_vegpath.")
 day_night_post_list_fine1 <- list()
 day_night_diagnostics_list_fine1 <- list()
@@ -1646,7 +1646,7 @@ xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standa
 
 # Loop over each species
 for(i in 1:length(key_sp)){
-  s <- day_night_post_list_grid1[[key_sp[i]]]
+  s <- day_night_post_list_fine1[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
@@ -1750,8 +1750,8 @@ for(i in 1:length(key_sp)){
 dev.off() # Close graphics device
 
 # Fine scale total novegpath
-setwd("F:/JASMIN_outputs/day_night_detection_gp")
-file_list2 <- list.files(pattern = ".fine_scale_total_novegpath.")
+setwd("C:/temp/camera_trap_models/day_night_detection/output")
+file_list2 <- list.files(pattern = ".fine_scale_total_no_veg_path.")
 day_night_post_list_fine2 <- list()
 day_night_diagnostics_list_fine2 <- list()
 
@@ -1789,7 +1789,7 @@ xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standa
 
 # Loop over each species
 for(i in 1:length(key_sp)){
-  s <- day_night_post_list_grid1[[key_sp[i]]]
+  s <- day_night_post_list_fine2[[key_sp[i]]]
   
   # Calculate marginal effects
   p_season1a <- matrix(NA, nrow=nrow(s), ncol=length(xseq))
