@@ -371,7 +371,7 @@ df_mu_t <- as.data.frame(cbind(rownames(y_n_s), mu_t))
 colnames(df_mu_t) <- c("grid_square", "grid_total_volume")
 df_mu_t$grid_square <- as.factor(df_mu_t$grid_square)
 
-setwd("C:/temp/PhD Data")
+setwd("C:/temp/Zooniverse/Final/site_data")
 save(df_mu_f, file = "grid_square_fruiting.Rdata")
 save(df_mu_n, file = "grid_square_non_fruiting.Rdata")
 save(df_mu_t, file = "grid_square_total.Rdata")
