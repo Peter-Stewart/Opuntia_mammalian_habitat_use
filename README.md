@@ -6,7 +6,7 @@ Files are shown in **bold**, directories are shown in *italics*.
   
 - **helper_functions.R** - custom functions used in the other R scripts
     
-- **accuracy_validation.R** - analysis of volunteer classification accuracy (for Appendix D)
+- **accuracy_validation.R** - analysis of volunteer classification accuracy
     
 - **analysis.R** - main analyses (occupancy, total detections, day vs. night detections)
     
@@ -14,6 +14,6 @@ Files are shown in **bold**, directories are shown in *italics*.
 
 - **model_diagnostics.R** - model diagnostics for Stan models 
     
-- *models* - Stan models used in chapters 4 and 5
+- *models* - Stan models
 
 
