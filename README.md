@@ -15,5 +15,11 @@ Files are shown in **bold**, directories are shown in *italics*.
 - **model_diagnostics.R** - model diagnostics for Stan models 
     
 - *models* - Stan models
+  - **day_night_detection_no_veg_path.stan** - model for effect of Opuntia on proportion of detections occurring at night, assuming no vegetation pathway
+  - **day_night_detection_vegpath.stan** - model for effect of Opuntia on proportion of detections occurring at night, assuming vegetation pathway
+  - **occupancy_no_veg_path.stan** - model for effect of Opuntia on occupancy, assuming no vegetation pathway
+  - **occupancy_vegpath.stan** - model for effect of Opuntia on occupancy, assuming vegetation pathway
+  - **total_activity_no_veg_path.stan** - model for effect of Opuntia on total number of detections per day, assuming no vegetation pathway
+  - **total_activity_vegpath.stan** - model for effect of Opuntia on total number of detections per day, assuming vegetation pathway
 
 
