@@ -2,14 +2,13 @@
 library(rethinking)
 library(dplyr)
 library(tidyr)
-#library(bayesplot)
 library(viridis)
 library(lubridate)
 library(posterior)
 library(suncalc)
 
 # Source helper functions ####
-source("C:/temp/Zooniverse/Final/scripts/helper_functions_new_v1.R", echo = FALSE)
+source("C:/temp/Zooniverse/Final/scripts/helper_functions.R", echo = FALSE)
 
 # Load data ####
 setwd("C:/temp/Zooniverse/Final/processed")
@@ -277,7 +276,7 @@ pars <- c("lp__",
 key_sp_alphabetical <- key_sp[order(key_sp)]
 
 # Load fine-scale no vegetation pathway
-setwd("F:/JASMIN_outputs/occupancy_post")
+setwd("F:/outputs/occupancy_post")
 file_list <- list.files(pattern = ".fine_scale_total_no_veg_path")
 post_list_fine1 <- list()
 diagnostics_list_fine1 <- list()
@@ -295,7 +294,7 @@ names(post_list_fine1) <- key_sp_alphabetical
 names(diagnostics_list_fine1) <- key_sp_alphabetical
 
 # Load fine-scale with vegetation pathway
-setwd("F:/JASMIN_outputs/occupancy_post")
+setwd("F:/outputs/occupancy_post")
 file_list <- list.files(pattern = ".fine_scale_total_veg_path")
 post_list_fine2 <- list()
 diagnostics_list_fine2 <- list()
@@ -313,7 +312,7 @@ names(post_list_fine2) <- key_sp_alphabetical
 names(diagnostics_list_fine2) <- key_sp_alphabetical
 
 # Load grid square with no vegetation pathway
-setwd("F:/JASMIN_outputs/occupancy_post")
+setwd("F:/outputs/occupancy_post")
 file_list <- list.files(pattern = ".grid_square_total_no_veg_path")
 post_list_grid1 <- list()
 diagnostics_list_grid1 <- list()
@@ -331,7 +330,7 @@ names(post_list_grid1) <- key_sp_alphabetical
 names(diagnostics_list_grid1) <- key_sp_alphabetical
 
 # Load grid square with vegetation pathway
-setwd("F:/JASMIN_outputs/occupancy_post")
+setwd("F:/outputs/occupancy_post")
 file_list <- list.files(pattern = ".grid_square_total_veg_path")
 post_list_grid2 <- list()
 diagnostics_list_grid2 <- list()
@@ -369,7 +368,7 @@ species_colours <- c("#35B779FF","#3E4A89FF")
 colouralpha <- 0.4
 
 # Set directory to save images
-setwd("F:/JASMIN_outputs/occupancy_figures")
+setwd("F:/outputs/occupancy_figures")
 
 # Fine scale - total effect no vegetation pathway
 # Open new graphics device to save as TIFF
@@ -781,7 +780,7 @@ for(sp in 1:length(key_sp)){
 names(all_dlist_fine) <- key_sp
 names(all_dlist_grid) <- key_sp
 
-# Load output from JASMIN
+# Load outputs
 setwd("C:/temp/camera_trap_models/total_activity/output")
 key_sp_alphabetical <- key_sp[order(key_sp)]
 pars <- c("lp__", 
@@ -1312,7 +1311,7 @@ names(all_dlist_fine) <- key_sp
 names(all_dlist_grid) <- key_sp
 
 
-# Load output from JASMIN
+# Load outputs
 setwd("C:/temp/camera_trap_models/day_night_detection/output")
 key_sp_alphabetical <- key_sp[order(key_sp)]
 pars <- c("lp__", 
@@ -1340,7 +1339,7 @@ names(day_night_post_list_grid1) <- key_sp_alphabetical
 names(day_night_diagnostics_list_grid1) <- key_sp_alphabetical
 
 # Plot results
-pr <- get(load("C:/temp/Zooniverse/Final/scripts/good_plot_par.Rdata")) # Good settings for 8-panel plots
+pr <- get(load("C:/temp/Zooniverse/Final/good_plot_par.Rdata")) # Good settings for 8-panel plots
 
 # Figure letters
 plot_titles <- c("A)", "B)", "C)", "D)", 
