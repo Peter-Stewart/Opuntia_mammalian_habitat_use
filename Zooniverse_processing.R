@@ -10,15 +10,8 @@ source("C:/temp/Zooniverse/Final/scripts/helper_functions_new_v1.R", echo = FALS
 # Load data ####
 setwd("C:/temp/Zooniverse/Final")
 
-workflows <- read.csv("prickly-pear-project-kenya-workflows.csv", header = TRUE)
 subjects <- read.csv("prickly-pear-project-kenya-subjects.csv")
 subjects <- subjects %>% filter(subject_set_id == 99701 | subject_set_id == 105787 | subject_set_id == 111085)
-#classifications <- read.csv("prickly-pear-project-kenya-classifications.csv", header = TRUE)
-
-setwd("C:/temp/Zooniverse/Talk_exports/2023_11_22")
-comments <- fromJSON("project-15807-comments_2023-11-22.json")
-comments$board_title <- as.factor(comments$board_title)
-comments <- comments %>% filter(board_title == "Notes")
 
 setwd("C:/temp/Zooniverse/Final/extracted")
 survey_extractions <- read.csv("survey_extractor_extractions.csv")
