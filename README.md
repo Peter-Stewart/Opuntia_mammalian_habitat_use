@@ -1,6 +1,6 @@
 # Impacts of invasive *Opuntia* cacti on mammal habitat use
 
-Code for reproducing the analyses in the manuscript "Impacts of invasive *Opuntia* cacti on mammal habitat use.
+Code for reproducing the analyses in the manuscript "Contrasting impacts of invasive *Opuntia* cacti on mammal habitat use.
 
 Files are shown in **bold**, directories are shown in *italics*.
 
