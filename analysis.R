@@ -6,6 +6,7 @@ library(viridis)
 library(lubridate)
 library(posterior)
 library(suncalc)
+library(cmdstanr)
 
 # Source helper functions ####
 source("C:/temp/Zooniverse/Final/scripts/helper_functions.R", echo = FALSE)
@@ -376,7 +377,7 @@ tiff("fine_scale_total_novegpath.tiff", width = 15.83, height = 12.69, units = '
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -408,12 +409,14 @@ for(i in 1:length(key_sp)){
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
+  plot(NULL, xlim = c(-0.77, 4.18), ylim=c(0,1), main="", 
        ylab = expression(psi),
-       xlab="Opuntia cover", 
-       yaxt = "n")
+       xlab="Opuntia cover (%)", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  axis(1, at = c(-0.7662678, 1.703541, 4.17335), labels = c(0, 20, 40))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -444,7 +447,7 @@ tiff("fine_scale_total_vegpath.tiff", width = 15.83, height = 12.69, units = 'cm
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -476,12 +479,14 @@ for(i in 1:length(key_sp)){
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
+  plot(NULL, xlim = c(-0.77, 4.18), ylim=c(0,1), main="", 
        ylab = expression(psi),
-       xlab="Opuntia cover", 
+       xlab="Opuntia cover (%)", 
+       xaxt = "n",
        yaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  axis(1, at = c(-0.7662678, 1.703541, 4.17335), labels = c(0, 20, 40))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -544,12 +549,15 @@ for(i in 1:length(key_sp)){
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
+  plot(NULL, xlim=c(-1.66, 3.11), ylim=c(0,1), main="", 
        ylab = expression(psi),
-       xlab="Opuntia grid square vol.", 
-       yaxt = "n")
+       xlab = "", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
+  title(xlab = expression(paste("Grid square Opuntia (m" ^ "3", ")")), line = 1.75)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  axis(1, at = c(-1.650739, 0.7262536, 3.103246), labels = c(4500, 10500, 16500))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -612,11 +620,14 @@ for(i in 1:length(key_sp)){
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
+  plot(NULL, xlim=c(-1.66, 3.11), ylim=c(0,1), main="", 
        ylab = expression(psi),
-       xlab="Opuntia grid square vol.", 
-       yaxt = "n")
+       xlab = "", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
+  title(xlab = expression(paste("Grid square Opuntia (m" ^ "3", ")")), line = 1.75)
+  axis(1, at = c(-1.650739, 0.7262536, 3.103246), labels = c(4500, 10500, 16500))
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -858,10 +869,13 @@ for(i in 1:length(key_sp)){
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+0.5), main="", 
        ylab = "Total detections",
-       xlab="Opuntia grid square vol.", 
-       yaxt = "n")
+       xlab="", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))), max(c(PI95_1, PI95_2))), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2)))), ceiling(max(c(PI95_1, PI95_2)))))
+  title(xlab = expression(paste("Grid square Opuntia (m" ^ "3", ")")), line = 1.75)
+  axis(1, at = c(-1.650739, 0.7262536, 3.103246), labels = c(4500, 10500, 16500))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -956,10 +970,13 @@ for(i in 1:length(key_sp)){
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+0.5), main="", 
        ylab = "Total detections",
-       xlab="Opuntia grid square vol.", 
-       yaxt = "n")
+       xlab="", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))), max(c(PI95_1, PI95_2))), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2)))), ceiling(max(c(PI95_1, PI95_2)))))
+  title(xlab = expression(paste("Grid square Opuntia (m" ^ "3", ")")), line = 1.75)
+  axis(1, at = c(-1.650739, 0.7262536, 3.103246), labels = c(4500, 10500, 16500))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -1018,7 +1035,7 @@ tiff("total_activity_fine_scale_total_vegpath.tiff", width = 15.83, height = 12.
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1052,12 +1069,14 @@ for(i in 1:length(key_sp)){
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+0.5), main="", 
+  plot(NULL, xlim=c(-0.77, 4.18), ylim=c(0,max(c(PI95_1, PI95_2))+0.5), main="", 
        ylab = "Total detections",
-       xlab="Opuntia cover", 
-       yaxt = "n")
+       xlab="Opuntia cover (%)", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))), max(c(PI95_1, PI95_2))), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2)))), ceiling(max(c(PI95_1, PI95_2)))))
+  axis(1, at = c(-0.7662678, 1.703541, 4.17335), labels = c(0, 20, 40))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -1116,7 +1135,7 @@ tiff("total_activity_fine_scale_total_novegpath.tiff", width = 15.83, height = 1
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1150,12 +1169,14 @@ for(i in 1:length(key_sp)){
   PI50_2 <- apply(p_season2, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,max(c(PI95_1, PI95_2))+0.5), main="", 
+  plot(NULL, xlim=c(-0.77, 4.18), ylim=c(0,max(c(PI95_1, PI95_2))+0.5), main="", 
        ylab = "Total detections",
-       xlab="Opuntia cover", 
-       yaxt = "n")
+       xlab="Opuntia cover (%)", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5*(max(c(PI95_1, PI95_2))), max(c(PI95_1, PI95_2))), labels = c(0, ceiling(0.5*(max(c(PI95_1, PI95_2)))), ceiling(max(c(PI95_1, PI95_2)))))
+  axis(1, at = c(-0.7662678, 1.703541, 4.17335), labels = c(0, 20, 40))
   
   shade(PI95_2, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -1417,10 +1438,13 @@ for(i in 1:length(key_sp)){
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = "P(night)",
-       xlab="Opuntia grid square vol.", 
-       yaxt = "n")
+       xlab="", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  title(xlab = expression(paste("Grid square Opuntia (m" ^ "3", ")")), line = 1.75)
+  axis(1, at = c(-1.650739, 0.7262536, 3.103246), labels = c(4500, 10500, 16500))
   
   #shade(PI95_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -1560,10 +1584,13 @@ for(i in 1:length(key_sp)){
   # Make the plots
   plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
        ylab = "P(night)",
-       xlab="Opuntia grid square vol.", 
-       yaxt = "n")
+       xlab="", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  title(xlab = expression(paste("Grid square Opuntia (m" ^ "3", ")")), line = 1.75)
+  axis(1, at = c(-1.650739, 0.7262536, 3.103246), labels = c(4500, 10500, 16500))
   
   #shade(PI95_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -1641,7 +1668,7 @@ tiff("day_night_fine_scale_total_vegpath.tiff", width = 15.83, height = 12.69, u
 par(pr)
 par(mfrow=c(3,4))
 
-xseq <- seq(-0.7663, 4.0190, by = 0.05) # Use real min/max Opuntia cover (standardised) values
+xseq <- seq(-0.7663, 4.0190, by = 0.01) # Use real min/max Opuntia cover (standardised) values
 
 # Loop over each species
 for(i in 1:length(key_sp)){
@@ -1701,12 +1728,15 @@ for(i in 1:length(key_sp)){
   PI50_2b <- apply(p_season2b, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
+  plot(NULL, xlim=c(-0.77, 4.18), ylim=c(0,1), main="", 
        ylab = "P(night)",
-       xlab="Opuntia cover", 
-       yaxt = "n")
+       xlab="Opuntia cover (%)", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  axis(1, at = c(-0.7662678, 1.703541, 4.17335), labels = c(0, 20, 40))
+  
   
   #shade(PI95_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
@@ -1844,12 +1874,14 @@ for(i in 1:length(key_sp)){
   PI50_2b <- apply(p_season2b, 2, HPDI, prob=0.50)
   
   # Make the plots
-  plot(NULL, xlim=c(min(xseq),max(xseq)), ylim=c(0,1), main="", 
+  plot(NULL, xlim=c(-0.77, 4.18), ylim=c(0,1), main="", 
        ylab = "P(night)",
-       xlab="Opuntia cover", 
-       yaxt = "n")
+       xlab="Opuntia cover (%)", 
+       yaxt = "n",
+       xaxt = "n")
   title(paste(plot_titles[i]), adj=0, line = 0.7)
   axis(2, at = c(0, 0.5, 1), labels = c(0, 0.5, 1))
+  axis(1, at = c(-0.7662678, 1.703541, 4.17335), labels = c(0, 20, 40))
   
   #shade(PI95_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
   shade(PI89_2a, xseq, col=col.alpha(species_colours[2], colouralpha))
