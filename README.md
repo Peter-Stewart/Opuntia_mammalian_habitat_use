@@ -14,6 +14,8 @@ Files are shown in **bold**, directories are shown in *italics*.
     
 - **distance_sampling.R** - distance sampling for estimating grid-square-level *Opuntia* density
 
+- **figures.R** - figures 3-5 in main text
+
 - **model_diagnostics.R** - model diagnostics for Stan models 
     
 - *models* - Stan models
