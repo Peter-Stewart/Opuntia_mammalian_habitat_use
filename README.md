@@ -16,6 +16,8 @@ Files are shown in **bold**, directories are shown in *italics*.
 
 - **figures.R** - figures 3-5 in main text
 
+  **supp_figures.R** - supplementary figures S2 and S3
+
 - **model_diagnostics.R** - model diagnostics for Stan models 
     
 - *models* - Stan models
