@@ -10,7 +10,7 @@ Files are shown in **bold**, directories are shown in *italics*.
     
 - **accuracy_validation.R** - analysis of volunteer classification accuracy
     
-- **analysis.R** - main analyses (occupancy, total detections, day vs. night detections)
+- **analysis.R** - main analyses (occupancy, total detections, day vs. night detections) and code for supplementary figures S4-S7
     
 - **distance_sampling.R** - distance sampling for estimating grid-square-level *Opuntia* density
 
