@@ -43,7 +43,6 @@ survey_extractions$interacting[which(survey_extractions$data.answers_doyouseeany
 
 # Merge classification data with subject set data
 survey_extractions <- survey_extractions %>% select(classification_id, 
-                                                    user_name,
                                                     user_id,
                                                     workflow_id,
                                                     task,
@@ -429,8 +428,8 @@ subjects_sub <- rbind(season1, season2)
 
 # Generate consensus classifications ####
 # Flag ID's made by expert users
-expert_usernames <- c("Peter.Stewart","Callie25")
-user_classifications$gold <- ifelse(user_classifications$user_name %in% expert_usernames, 1, 0)
+expert_usernames <- c(1672000, 2293934)
+user_classifications$gold <- ifelse(user_classifications$user_id %in% expert_usernames, 1, 0)
 
 expert_verified <- user_classifications %>% filter(gold == 1)
 
