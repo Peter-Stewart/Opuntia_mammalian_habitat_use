@@ -8,7 +8,6 @@ library(cowplot)
 # Load data ####
 setwd("C:/temp/Zooniverse/Final/processed")
 validation_set <- get(load("validation_set.Rdata"))
-expert_usernames <- c("Peter.Stewart","Callie25")
 
 # Subset to just essential variables
 validation_sub <- validation_set %>% select(subject_id, species, user_id, gold)
